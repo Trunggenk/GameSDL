@@ -1,57 +1,86 @@
-#include <iostream>
-#include <SDL.h>
-using namespace std;
-int main(int argc, char* argv[])
+#include<iostream>
+#include<SDL.h>
+
+SDL_Window * gWindow = NULL; // tạo cửa soor
+
+SDL_Surface* gScreenSurface = NULL;//tao khu vực trong cửa man hinh
+SDL_Surface* gHelloWorld = NULL;// tao noi anh se hien len
+int SDL_WIDTH=200;
+int SDL_HEIGHT=200;
+
+
+bool init()
 {
-    if (SDL_Init(SDL_INIT_VIDEO) != 0)
+    bool success = true;
+
+    //khoi tao SDL
+    if(SDL_Init(SDL_INIT_VIDEO)<0)
     {
-        cout << "SDL_Init Error: " << SDL_GetError() << endl;
-        return 1;
+        printf("SDL chua duoc khoi tao");
+        success = 0;
+
     }
-    SDL_Window *win = SDL_CreateWindow("Hello World!", 100, 100, 640, 480, SDL_WINDOW_SHOWN);
-    if (win == nullptr)
+    else
     {
-        cout << "SDL_CreateWindow Error: " << SDL_GetError() << endl;
-        SDL_Quit();
-        return 1;
+        gWindow = SDL_CreateWindow("SDL tieu de",SDL_WINDOWPOS_UNDEFINED,SDL_WINDOWPOS_UNDEFINED,SDL_WIDTH, SDL_HEIGHT, SDL_WINDOW_SHOWN);
+        if (gWindow== NULL)
+        {
+            printf("window chua duoc tao");
+            success=0;
+        } else
+        {
+            // lay be mat chua boi cua so
+            gScreenSurface= SDL_GetWindowSurface(gWindow);
+        }
     }
-    SDL_Renderer *ren = SDL_CreateRenderer(win, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
-    if (ren == nullptr)
+    return  success;
+
+}
+
+bool loadMedia()
+{
+    bool success= 1;
+    gHelloWorld=SDL_LoadBMP("C:\\Users\\Trung\\CLionProjects\\GameSDL\\hello_world.bmp");
+    if(gHelloWorld== NULL)
     {
-        SDL_DestroyWindow(win);
-        cout << "SDL_CreateRenderer Error: " << SDL_GetError() << endl;
-        SDL_Quit();
-        return 1;
+        printf("khong load dc hinh anh %s" ,SDL_GetError());
+        success= false;
+
     }
-    SDL_Surface *bmp = SDL_LoadBMP("C:\\Users\\Trung\\CLionProjects\\GameSDL\\hello_world.bmp");
-    if (bmp == nullptr)
-    {
-        SDL_DestroyRenderer(ren);
-        SDL_DestroyWindow(win);
-        cout << "SDL_LoadBMP Error: " << SDL_GetError() << endl;
-        SDL_Quit();
-        return 1;
-    }
-    SDL_Texture *tex = SDL_CreateTextureFromSurface(ren, bmp);
-    SDL_FreeSurface(bmp);
-    if (tex == nullptr)
-    {
-        SDL_DestroyRenderer(ren);
-        SDL_DestroyWindow(win);
-        cout << "SDL_CreateTextureFromSurface Error: " << SDL_GetError() << endl;
-        SDL_Quit();
-        return 1;
-    }
-    for (int i = 0; i < 3; ++i)
-    {
-        SDL_RenderClear(ren);
-        SDL_RenderCopy(ren, tex, NULL, NULL);
-        SDL_RenderPresent(ren);
-        SDL_Delay(1000);
-    }
-    SDL_DestroyTexture(tex);
-    SDL_DestroyRenderer(ren);
-    SDL_DestroyWindow(win);
+    return success;
+}
+
+void close()
+{
+
+    SDL_FreeSurface(gHelloWorld);//giai phong bo nhớ cho SDL_sufface
+    gHelloWorld=NULL;
+    SDL_DestroyWindow(gWindow);
+    gWindow=NULL;
     SDL_Quit();
+
+}
+using namespace std;
+int main(int argc, char *args[])
+{
+    if(!init())
+    {
+        printf("khogn the toa");
+
+    }
+    else {
+        //Load media
+        if (!loadMedia()) {
+            printf("Failed to load media!\n");
+        } else {
+            //Apply the image
+            SDL_BlitSurface(gHelloWorld, NULL, gScreenSurface, NULL);
+            SDL_UpdateWindowSurface(gWindow);
+            SDL_Event e;
+            bool quit = false;
+            while (quit == false) { while (SDL_PollEvent(&e)) { if (e.type == SDL_QUIT) quit = true; }}
+
+        }
+    }
     return 0;
 }
