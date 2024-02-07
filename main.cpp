@@ -1,121 +1,57 @@
-/*This source code copyrighted by Lazy Foo' Productions 2004-2024
-and may not be redistributed without written permission.*/
-
-//Using SDL and standard IO
+#include <iostream>
 #include <SDL.h>
-#include <stdio.h>
-
-//Screen dimension constants
-const int SCREEN_WIDTH = 640;
-const int SCREEN_HEIGHT = 480;
-
-//Starts up SDL and creates window
-bool init();
-
-//Loads media
-bool loadMedia();
-
-//Frees media and shuts down SDL
-void close();
-
-//The window we'll be rendering to
-SDL_Window* gWindow = NULL;
-
-//The surface contained by the window
-SDL_Surface* gScreenSurface = NULL;
-
-//The image we will load and show on the screen
-SDL_Surface* gHelloWorld = NULL;
-
-bool init()
+using namespace std;
+int main(int argc, char* argv[])
 {
-    //Initialization flag
-    bool success = true;
-
-    //Initialize SDL
-    if( SDL_Init( SDL_INIT_VIDEO ) < 0 )
+    if (SDL_Init(SDL_INIT_VIDEO) != 0)
     {
-        printf( "SDL could not initialize! SDL_Error: %s\n", SDL_GetError() );
-        success = false;
+        cout << "SDL_Init Error: " << SDL_GetError() << endl;
+        return 1;
     }
-    else
+    SDL_Window *win = SDL_CreateWindow("Hello World!", 100, 100, 640, 480, SDL_WINDOW_SHOWN);
+    if (win == nullptr)
     {
-        //Create window
-        gWindow = SDL_CreateWindow( "SDL Tutorial", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN );
-        if( gWindow == NULL )
-        {
-            printf( "Window could not be created! SDL_Error: %s\n", SDL_GetError() );
-            success = false;
-        }
-        else
-        {
-            //Get window surface
-            gScreenSurface = SDL_GetWindowSurface( gWindow );
-        }
+        cout << "SDL_CreateWindow Error: " << SDL_GetError() << endl;
+        SDL_Quit();
+        return 1;
     }
-
-    return success;
-}
-
-bool loadMedia()
-{
-    //Loading success flag
-    bool success = true;
-
-    //Load splash image
-    gHelloWorld = SDL_LoadBMP( "C:\\Users\\Trung\\CLionProjects\\GameSDL\\hello_world.bmp" );
-    if( gHelloWorld == NULL )
+    SDL_Renderer *ren = SDL_CreateRenderer(win, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+    if (ren == nullptr)
     {
-        printf( "Unable to load image %s! SDL Error: %s\n", "02_getting_an_image_on_the_screen/hello_world.bmp", SDL_GetError() );
-        success = false;
+        SDL_DestroyWindow(win);
+        cout << "SDL_CreateRenderer Error: " << SDL_GetError() << endl;
+        SDL_Quit();
+        return 1;
     }
-
-    return success;
-}
-
-void close()
-{
-    //Deallocate surface
-    SDL_FreeSurface( gHelloWorld );
-    gHelloWorld = NULL;
-
-    //Destroy window
-    SDL_DestroyWindow( gWindow );
-    gWindow = NULL;
-
-    //Quit SDL subsystems
+    SDL_Surface *bmp = SDL_LoadBMP("C:\\Users\\Trung\\CLionProjects\\GameSDL\\hello_world.bmp");
+    if (bmp == nullptr)
+    {
+        SDL_DestroyRenderer(ren);
+        SDL_DestroyWindow(win);
+        cout << "SDL_LoadBMP Error: " << SDL_GetError() << endl;
+        SDL_Quit();
+        return 1;
+    }
+    SDL_Texture *tex = SDL_CreateTextureFromSurface(ren, bmp);
+    SDL_FreeSurface(bmp);
+    if (tex == nullptr)
+    {
+        SDL_DestroyRenderer(ren);
+        SDL_DestroyWindow(win);
+        cout << "SDL_CreateTextureFromSurface Error: " << SDL_GetError() << endl;
+        SDL_Quit();
+        return 1;
+    }
+    for (int i = 0; i < 3; ++i)
+    {
+        SDL_RenderClear(ren);
+        SDL_RenderCopy(ren, tex, NULL, NULL);
+        SDL_RenderPresent(ren);
+        SDL_Delay(1000);
+    }
+    SDL_DestroyTexture(tex);
+    SDL_DestroyRenderer(ren);
+    SDL_DestroyWindow(win);
     SDL_Quit();
-}
-
-int main( int argc, char* args[] )
-{
-    //Start up SDL and create window
-    if( !init() )
-    {
-        printf( "Failed to initialize!\n" );
-    }
-    else
-    {
-        //Load media
-        if( !loadMedia() )
-        {
-            printf( "Failed to load media!\n" );
-        }
-        else
-        {
-            //Apply the image
-            SDL_BlitSurface( gHelloWorld, NULL, gScreenSurface, NULL );
-
-            //Update the surface
-            SDL_UpdateWindowSurface( gWindow );
-
-            //Hack to get window to stay up
-            SDL_Event e; bool quit = false; while( quit == false ){ while( SDL_PollEvent( &e ) ){ if( e.type == SDL_QUIT ) quit = true; } }
-        }
-    }
-
-    //Free resources and close SDL
-    close();
-
     return 0;
 }
