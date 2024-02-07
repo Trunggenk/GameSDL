@@ -8,6 +8,9 @@ SDL_Surface* gHelloWorld = NULL;// tao noi anh se hien len
 int SDL_WIDTH=200;
 int SDL_HEIGHT=200;
 
+bool quit = false;
+SDL_Event e;
+
 
 bool init()
 {
@@ -78,9 +81,27 @@ int main(int argc, char *args[])
             SDL_UpdateWindowSurface(gWindow);
             SDL_Event e;
             bool quit = false;
-            while (quit == false) { while (SDL_PollEvent(&e)) { if (e.type == SDL_QUIT) quit = true; }}
+            while( !quit )
+            {
+                //Handle events on queue
+                while( SDL_PollEvent( &e ) != 0 )
+                {
+                    //User requests quit
+                    if( e.type == SDL_QUIT )
+                    {
+                        quit = true;
+                    }
+                }
+
+                //Apply the image
+                SDL_BlitSurface( gHelloWorld, NULL, gScreenSurface, NULL );
+
+                //Update the surface
+                SDL_UpdateWindowSurface( gWindow );
+            }
 
         }
     }
+    close();
     return 0;
 }
