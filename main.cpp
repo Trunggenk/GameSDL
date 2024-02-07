@@ -89,7 +89,7 @@ int main(int argc, char *args[])
                     //User requests quit
                     if( e.type == SDL_QUIT )
                     {
-                        quit = true;
+                         quit = true;
                     }
                 }
 
