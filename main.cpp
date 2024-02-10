@@ -4,7 +4,12 @@
 using namespace std;
 
 
-enum {
+const int SDL_WIDTH = 640;
+const int SDL_HEIGHT = 480;
+
+//Key press surfaces constants
+enum KeyPressSurfaces
+{
     KEY_PRESS_SURFACE_DEFAULT,
     KEY_PRESS_SURFACE_UP,
     KEY_PRESS_SURFACE_DOWN,
@@ -12,15 +17,30 @@ enum {
     KEY_PRESS_SURFACE_RIGHT,
     KEY_PRESS_SURFACE_TOTAL
 };
-SDL_Surface* loadSurface(string path);// load tung anh
-SDL_Surface* gKeyPressSurfaces[KEY_PRESS_SURFACE_TOTAL];//anh anh tuong ung khi nhan
-SDL_Window * gWindow = NULL; // tạo cửa soor
-SDL_Surface* gScreenSurface = NULL;//tao khu vực trong cửa man hinh
-SDL_Surface* gHelloWorld = NULL;// tao noi anh se hien len
-SDL_Surface* gCurrentSurface= NULL; // anh hien tai hien thi
-int SDL_WIDTH=500;
 
-int SDL_HEIGHT=600;
+//Starts up SDL and creates window
+bool init();
+
+//Loads media
+bool loadMedia();
+
+//Frees media and shuts down SDL
+void close();
+
+//Loads individual image
+SDL_Surface* loadSurface( std::string path );
+
+//The window we'll be rendering to
+SDL_Window* gWindow = NULL;
+
+//The surface contained by the window
+SDL_Surface* gScreenSurface = NULL;
+
+//The images that correspond to a keypress
+SDL_Surface* gKeyPressSurfaces[ KEY_PRESS_SURFACE_TOTAL ];
+
+//Current displayed image
+SDL_Surface* gCurrentSurface = NULL;
 
 bool init()
 {
@@ -53,6 +73,7 @@ bool init()
 bool loadMedia()
 {
     bool success= 1;
+
     gKeyPressSurfaces[KEY_PRESS_SURFACE_DEFAULT]= loadSurface("press.bmp");
     if( gKeyPressSurfaces[KEY_PRESS_SURFACE_DEFAULT]==NULL)
     {
@@ -90,10 +111,18 @@ bool loadMedia()
 void close()
 {
 
-    SDL_FreeSurface(gHelloWorld);//giai phong bo nhớ cho SDL_sufface
-    gHelloWorld=NULL;
-    SDL_DestroyWindow(gWindow);
-    gWindow=NULL;
+    //Deallocate surfaces
+    for( int i = 0; i < KEY_PRESS_SURFACE_TOTAL; ++i )
+    {
+        SDL_FreeSurface( gKeyPressSurfaces[ i ] );
+        gKeyPressSurfaces[ i ] = NULL;
+    }
+
+    //Destroy window
+    SDL_DestroyWindow( gWindow );
+    gWindow = NULL;
+
+    //Quit SDL subsystems
     SDL_Quit();
 
 }
@@ -121,8 +150,7 @@ int main(int argc, char *args[])
             printf("Failed to load media!\n");
         } else {
             //Apply the image
-            SDL_BlitSurface(gHelloWorld, NULL, gScreenSurface, NULL);
-            SDL_UpdateWindowSurface(gWindow);
+
             SDL_Event e;
             bool quit = false;
             gCurrentSurface= gKeyPressSurfaces[KEY_PRESS_SURFACE_DEFAULT];
@@ -153,6 +181,7 @@ int main(int argc, char *args[])
                                 break;
                             case SDLK_RIGHT:
                                 gCurrentSurface = gKeyPressSurfaces[KEY_PRESS_SURFACE_RIGHT];
+                                break;
                             default:
                                 gCurrentSurface = gKeyPressSurfaces[KEY_PRESS_SURFACE_DEFAULT];
                                 break;
@@ -163,7 +192,7 @@ int main(int argc, char *args[])
                 }
 
                 //Apply the image
-                SDL_BlitSurface( gHelloWorld, NULL, gScreenSurface, NULL );
+                SDL_BlitSurface( gCurrentSurface, NULL, gScreenSurface, NULL );
 
                 //Update the surface
                 SDL_UpdateWindowSurface( gWindow );
