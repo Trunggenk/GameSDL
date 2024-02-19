@@ -56,6 +56,13 @@ build CMakeFiles/GameSDL.dir/main.cpp.obj: CXX_COMPILER__GameSDL_unscanned_Debug
   OBJECT_DIR = CMakeFiles\GameSDL.dir
   OBJECT_FILE_DIR = CMakeFiles\GameSDL.dir
 
+build CMakeFiles/GameSDL.dir/test1.cpp.obj: CXX_COMPILER__GameSDL_unscanned_Debug C$:/Users/Trung/CLionProjects/GameSDL/test1.cpp || cmake_object_order_depends_target_GameSDL
+  DEP_FILE = CMakeFiles\GameSDL.dir\test1.cpp.obj.d
+  FLAGS = -g -fdiagnostics-color=always
+  INCLUDES = -IC:/libs/SDL/include
+  OBJECT_DIR = CMakeFiles\GameSDL.dir
+  OBJECT_FILE_DIR = CMakeFiles\GameSDL.dir
+
 
 # =============================================================================
 # Link build statements for EXECUTABLE target GameSDL
@@ -64,7 +71,7 @@ build CMakeFiles/GameSDL.dir/main.cpp.obj: CXX_COMPILER__GameSDL_unscanned_Debug
 #############################################
 # Link the executable GameSDL.exe
 
-build GameSDL.exe: CXX_EXECUTABLE_LINKER__GameSDL_Debug CMakeFiles/GameSDL.dir/main.cpp.obj
+build GameSDL.exe: CXX_EXECUTABLE_LINKER__GameSDL_Debug CMakeFiles/GameSDL.dir/main.cpp.obj CMakeFiles/GameSDL.dir/test1.cpp.obj
   FLAGS = -g
   LINK_LIBRARIES = -lSDL2main  -lSDL2  -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32
   LINK_PATH = -LC:/libs/SDL/lib/x64

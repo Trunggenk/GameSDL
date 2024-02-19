@@ -8,6 +8,8 @@ include_directories(${SDL2_INCLUDE_DIR})
 link_directories(${SDL2_LIB_DIR})
 
 add_executable(${PROJECT_NAME} main.cpp
+        test1.cpp
+        test1.h
 )
 
 target_link_libraries(${PROJECT_NAME} SDL2main SDL2)
