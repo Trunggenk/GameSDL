@@ -52,14 +52,7 @@ build cmake_object_order_depends_target_GameSDL: phony || CMakeFiles/GameSDL.dir
 build CMakeFiles/GameSDL.dir/main.cpp.obj: CXX_COMPILER__GameSDL_unscanned_Debug C$:/Users/Trung/CLionProjects/GameSDL/main.cpp || cmake_object_order_depends_target_GameSDL
   DEP_FILE = CMakeFiles\GameSDL.dir\main.cpp.obj.d
   FLAGS = -g -fdiagnostics-color=always
-  INCLUDES = -IC:/libs/SDL/include
-  OBJECT_DIR = CMakeFiles\GameSDL.dir
-  OBJECT_FILE_DIR = CMakeFiles\GameSDL.dir
-
-build CMakeFiles/GameSDL.dir/test1.cpp.obj: CXX_COMPILER__GameSDL_unscanned_Debug C$:/Users/Trung/CLionProjects/GameSDL/test1.cpp || cmake_object_order_depends_target_GameSDL
-  DEP_FILE = CMakeFiles\GameSDL.dir\test1.cpp.obj.d
-  FLAGS = -g -fdiagnostics-color=always
-  INCLUDES = -IC:/libs/SDL/include
+  INCLUDES = -IC:/libs/SDL/include -IC:/libs/SDL2_image/include -IC:/libs/SDL2_ttf/include
   OBJECT_DIR = CMakeFiles\GameSDL.dir
   OBJECT_FILE_DIR = CMakeFiles\GameSDL.dir
 
@@ -71,10 +64,10 @@ build CMakeFiles/GameSDL.dir/test1.cpp.obj: CXX_COMPILER__GameSDL_unscanned_Debu
 #############################################
 # Link the executable GameSDL.exe
 
-build GameSDL.exe: CXX_EXECUTABLE_LINKER__GameSDL_Debug CMakeFiles/GameSDL.dir/main.cpp.obj CMakeFiles/GameSDL.dir/test1.cpp.obj
+build GameSDL.exe: CXX_EXECUTABLE_LINKER__GameSDL_Debug CMakeFiles/GameSDL.dir/main.cpp.obj
   FLAGS = -g
-  LINK_LIBRARIES = -lSDL2main  -lSDL2  -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32
-  LINK_PATH = -LC:/libs/SDL/lib/x64
+  LINK_LIBRARIES = -lSDL2main  -lSDL2  -lSDL2_image  -lSDL2_ttf  -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32
+  LINK_PATH = -LC:/libs/SDL/lib/x64   -LC:/libs/SDL2_image/lib/x64   -LC:/libs/SDL2_ttf/lib/x64
   OBJECT_DIR = CMakeFiles\GameSDL.dir
   POST_BUILD = cd .
   PRE_LINK = cd .
