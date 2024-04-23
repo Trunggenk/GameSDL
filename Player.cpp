@@ -1,389 +1,169 @@
 #include "Player.h"
-
-int frame_number(Input in) {
-    if ((in.jump == 1 || in.fall == 1) && in.normal_attack == 1) return 8;
-    else if (in.jump == 1) return 6;
-    else if (in.fall == 1) return 6;
-    else if (in.attacked == 1) return 1;
-    else if (in.HoaDon == 1) return 19;
-    else if (in.normal_attack == 1) return 13;
-    else if (in.stand == 1) return 6;
-    else if (in.run == 1) return 6;
+#include "SDL_Init.h"
+int Player::frameNumber(InputState input) {
+    if ((input.jump == 1 || input.fall == 1) && input.normalAttack == 1) return 8;
+    if (input.jump == 1 || input.fall == 1) return 6;
+    if (input.attacked == 1) return 1;
+    if (input.specialAttack == 1) return 19;
+    if (input.normalAttack == 1) return 13;
+    if (input.stand == 1 || input.run == 1) return 6;
+    return 0;
 }
 
-Player::Player() {
-    CurrentIMG = 0;
-    x_pos = 0;
-    y_pos = 0;
-    x_value = 0;
-    y_value = 0;
-    width_character = 0;
-    height_character = 0;
-    Direction = -1;
-    type_input.stand = 1;
-    type_input.run = 0;
-    type_input.jump = 0;
-    type_input.normal_attack = 0;
-    type_input.attacked = 0;
-    type_input.HoaDon = 0;
-    Stand_on_ground = false;
-    x_map = 0;
-    y_map = 0;
-    y_ground = 0;
-    type_input.fall = 0;
-    death = false;
-    attack_count = 0;
-    Is_Attacked_Left = false;
-    Is_Attackef_Right = false;
-    collected_point = 0;
-    HP = 10000;
-    attacked_by = 0;
-    HPDown = 0;
+Player::Player()
+        : currentFrame(0), posX(0), posY(0), velX(0), velY(0), characterWidth(0), characterHeight(0),
+          direction(-1), isOnGround(false), mapX(0), mapY(0), groundY(0), isDead(false), attackCount(0),
+          isAttackedFromLeft(false), isAttackedFromRight(false), pointsCollected(0), health(10000),
+          attackedBy(0), healthDecrease(0), changeHealthBar(false) {
+    inputState = {1, 0, 0, 0, 0, 0, 0};
 }
 
-Player::~Player() {
+Player::~Player() {}
 
-}
-
-bool Player::LoadImg(string path, SDL_Renderer *renderer) {
-    bool loadedimg = Object::LoadImg(path, renderer);
-    if (loadedimg == true) {
-        width_character = rect_.w / frame_number(type_input);
-        height_character = rect_.h;
+bool Player::LoadImage(std::string path, SDL_Renderer* renderer) {
+    bool loaded = Object::LoadImage(path, renderer);
+    if (loaded) {
+        characterWidth = rect_.w / frameNumber(inputState);
+        characterHeight = rect_.h;
     }
-    return loadedimg;
+    return loaded;
 }
 
-void Player::Set_Frame() {
-    int frame_number_ = frame_number(type_input);
-    for (int i = 0; i < frame_number_; i += 1) {
-        gif[i].x = i * width_character;
+void Player::SetAnimationFrames() {
+    int frameNum = frameNumber(inputState);
+    for (int i = 0; i < frameNum; ++i) {
+        gif[i].x = i * characterWidth;
         gif[i].y = 0;
-        gif[i].w = width_character;
-        gif[i].h = height_character;
+        gif[i].w = characterWidth;
+        gif[i].h = characterHeight;
     }
 }
 
-void Player::Present(SDL_Renderer *des) {
-    if (Direction == Left) {
-        if ((type_input.jump == 1 || type_input.fall == 1) && type_input.normal_attack == 1)
-            LoadImg("Player/jump_normal_attack_left.png", des);
-        else if (type_input.jump == 1) LoadImg("Player/player_jump_up_left.png", des);
-        else if (type_input.fall == 1) LoadImg("Player/player_jump_down_left.png", des);
-        else if (type_input.attacked == 1) LoadImg("Player/Is_Attacked_Left.png", des);
-        else if (type_input.HoaDon == 1) LoadImg("Player/player_hoadon_left.png", des);
-        else if (type_input.normal_attack == 1) LoadImg("Player/player_attack_left.png", des);
-        else if (type_input.stand == 1) {
-            LoadImg("Player/player_stand_left_official.png", des);
+void Player::Render(SDL_Renderer* des) {
+    std::string imgPath;
+    if (direction == Left) {
+        if ((inputState.jump == 1 || inputState.fall == 1) && inputState.normalAttack == 1)
+            imgPath = "Player/jump_normal_attack_left.png";
+        else if (inputState.jump == 1) imgPath = "Player/player_jump_up_left.png";
+        else if (inputState.fall == 1) imgPath = "Player/player_jump_down_left.png";
+        else if (inputState.attacked == 1) imgPath = "Player/Is_Attacked_Left.png";
+        else if (inputState.specialAttack == 1) imgPath = "Player/player_special_attack_left.png";
+        else if (inputState.normalAttack == 1) imgPath = "Player/player_attack_left.png";
+        else if (inputState.stand == 1) {
+            imgPath = "Player/player_stand_left_official.png";
             SDL_Delay(50);
-        } else if (type_input.run == 1) LoadImg("Player/player_run_left_official.png", des);
+        } else if (inputState.run == 1) imgPath = "Player/player_run_left_official.png";
     } else {
-        if ((type_input.jump == 1 || type_input.fall == 1) && type_input.normal_attack == 1)
-            LoadImg("Player/jump_normal_attack_right.png", des);
-        else if (type_input.jump == 1) LoadImg("Player/player_jump_up_right.png", des);
-        else if (type_input.fall == 1) LoadImg("Player/player_jump_down_right.png", des);
-        else if (type_input.attacked == 1) LoadImg("Player/Is_Attacked_Right.png", des);
-        else if (type_input.HoaDon == 1) LoadImg("Player/player_hoadon_right.png", des);
-        else if (type_input.normal_attack == 1) LoadImg("Player/player_attack_right.png", des);
-        else if (type_input.stand == 1) {
-            LoadImg("Player/stand_right.png", des);
+        if ((inputState.jump == 1 || inputState.fall == 1) && inputState.normalAttack == 1)
+            imgPath = "Player/jump_normal_attack_right.png";
+        else if (inputState.jump == 1) imgPath = "Player/player_jump_up_right.png";
+        else if (inputState.fall == 1) imgPath = "Player/player_jump_down_right.png";
+        else if (inputState.attacked == 1) imgPath = "Player/Is_Attacked_Right.png";
+        else if (inputState.specialAttack == 1) imgPath = "Player/player_special_attack_right.png";
+        else if (inputState.normalAttack == 1) imgPath = "Player/player_attack_right.png";
+        else if (inputState.stand == 1) {
+            imgPath = "Player/stand_right.png";
             SDL_Delay(50);
-        } else if (type_input.run == 1) LoadImg("Player/player_run_right_official.png", des);
+        } else if (inputState.run == 1) imgPath = "Player/player_run_right_official.png";
     }
-    CurrentIMG++;
-    if (type_input.HoaDon == 1) SDL_Delay(50);
-    if (CurrentIMG >= frame_number(type_input) && type_input.normal_attack == 1 && attack_count <= 5) {
-        attack_count++;
-        CurrentIMG = frame_number(type_input) - 1;
-    } else if (CurrentIMG >= (frame_number(type_input) - 1) && type_input.HoaDon == 1) {
-        CurrentIMG = 0;
-        type_input.HoaDon = 0;
-    } else if (CurrentIMG >= frame_number(type_input)) CurrentIMG = 0;
-    if (attack_count == 6) {
-        attack_count = 0;
-        CurrentIMG = 0;
+    LoadImage(imgPath, des);
+
+    currentFrame++;
+    if (inputState.specialAttack == 1) SDL_Delay(50);
+    if (currentFrame >= frameNumber(inputState) && inputState.normalAttack == 1 && attackCount <= 5) {
+        attackCount++;
+        currentFrame = frameNumber(inputState) - 1;
+    } else if (currentFrame >= (frameNumber(inputState) - 1) && inputState.specialAttack == 1) {
+        currentFrame = 0;
+        inputState.specialAttack = 0;
+    } else if (currentFrame >= frameNumber(inputState)) currentFrame = 0;
+
+    if (attackCount == 6) {
+        attackCount = 0;
+        currentFrame = 0;
     }
-    if (type_input.HoaDon == 1 && Direction == Left) {
-        rect_.x = x_pos - x_map - width_character + TILE_SIZE;
-        rect_.y = y_pos - y_map;
+
+    if (inputState.specialAttack == 1 && direction == Left) {
+        rect_.x = posX - mapX - characterWidth + TILE_SIZE;
+        rect_.y = posY - mapY;
     } else {
-        rect_.x = x_pos - x_map;
-        rect_.y = y_pos - y_map;
+        rect_.x = posX - mapX;
+        rect_.y = posY - mapY;
     }
-    SDL_Rect *current_clip = &gif[CurrentIMG];
-    SDL_Rect renderQuad = {rect_.x, rect_.y, width_character, height_character};
-    SDL_RenderCopy(des, myobject, current_clip, &renderQuad);
+
+    SDL_Rect* currentClip = &gif[currentFrame];
+    SDL_Rect renderQuad = {rect_.x, rect_.y, characterWidth, characterHeight};
+    SDL_RenderCopy(des, objectTexture, currentClip, &renderQuad);
 }
 
-void Player::InputAction(SDL_Event events, SDL_Renderer *renderer) {
+void Player::HandleInput(SDL_Event events, SDL_Renderer* renderer) {
     if (events.type == SDL_KEYDOWN) {
         switch (events.key.keysym.sym) {
-            case SDLK_k: {
-                if (type_input.HoaDon == 0) CurrentIMG = 0;
-                if (Stand_on_ground) type_input.HoaDon = 1;
-            }
+            case SDLK_k:
+                if (inputState.specialAttack == 0) currentFrame = 0;
+                if (isOnGround) inputState.specialAttack = 1;
                 break;
-            case SDLK_j: {
-                type_input.normal_attack = 1;
-                type_input.HoaDon = 0;
-            }
+            case SDLK_j:
+                inputState.normalAttack = 1;
+                inputState.specialAttack = 0;
                 break;
-                break;
-            case SDLK_w: {
-                if (Stand_on_ground == true) {
-                    type_input.jump = 1;
-                    y_ground = y_pos;
-                    Stand_on_ground = false;
+            case SDLK_w:
+                if (isOnGround) {
+                    inputState.jump = 1;
+                    groundY = posY;
+                    isOnGround = false;
                 }
-                type_input.HoaDon = 0;
-            }
+                inputState.specialAttack = 0;
                 break;
-            case SDLK_d: {
-                if ((!Stand_on_ground && Direction == Left && x_value != 0)) break;
-                else {
-                    Direction = Right;
-                    type_input.run = 1;
-                    type_input.stand = 0;
-                    type_input.HoaDon = 0;
+            case SDLK_d:
+                if (!(isOnGround == false && direction == Left && velX != 0)) {
+                    direction = Right;
+                    inputState.run = 1;
+                    inputState.stand = 0;
+                    inputState.specialAttack = 0;
                 }
-            }
                 break;
-            case SDLK_a: {
-                if ((!Stand_on_ground && Direction == Right && x_value != 0)) break;
-                else {
-                    Direction = Left;
-                    type_input.run = 1;
-                    type_input.stand = 0;
-                    type_input.HoaDon = 0;
+            case SDLK_a:
+                if (!(isOnGround == false && direction == Right && velX != 0)) {
+                    direction = Left;
+                    inputState.run = 1;
+                    inputState.stand = 0;
+                    inputState.specialAttack = 0;
                 }
-            }
                 break;
             default:
                 break;
         }
     } else if (events.type == SDL_KEYUP) {
         switch (events.key.keysym.sym) {
-            case SDLK_w: {
-                type_input.fall = 1;
-                type_input.jump = 0;
-            }
+            case SDLK_w:
+                inputState.fall = 1;
+                inputState.jump = 0;
                 break;
-            case SDLK_j: {
-                type_input.normal_attack = 0;
-            }
+            case SDLK_j:
+                inputState.normalAttack = 0;
                 break;
-            default: {
-                type_input.run = 0;
-                type_input.stand = 1;
-            }
+            default:
+                inputState.run = 0;
+                inputState.stand = 1;
                 break;
         }
     }
 }
 
-void Player::Move(currentMap &mymap) {
-    x_value = 0;
-    y_value += GRAVITY;
+void Player::Move(Map& mymap) {
+    velX = 0;
+    velY += GRAVITY;
 
-    if (y_value >= MAX_FAIL) y_value = MAX_FAIL;
-    if (type_input.run == 1 && Direction == Right) {
-        x_value += SPEED;
-    } else if (type_input.run == 1 && Direction == Left) {
-        x_value -= SPEED;
+    if (velY >= MAX_FALL_SPEED) velY = MAX_FALL_SPEED;
+    if (inputState.run == 1) {
+        if (direction == Right) velX += SPEED;
+        else if (direction == Left) velX -= SPEED;
     }
-    if (type_input.jump == 1) {
-        y_value -= JUMPSPEED;
-    } else if (type_input.fall == 1) {
-        y_value += JUMPSPEED;
+    if (inputState.jump == 1) {
+        velY -= JUMP_SPEED;
+    } else if (inputState.fall == 1) {
+        velY += JUMP_SPEED;
     }
-    if (type_input.normal_attack == 1 && type_input.run == 1) {
-        if (Direction == Right) x_value -= SPEED / 3;
-        else if (Direction == Left) x_value += SPEED / 3;
-    }
-    CheckVaCham(mymap);
-    MoveMap(mymap);
-}
-
-void Player::CheckVaCham(currentMap &mymap) {
-    int x1 = (x_pos + x_value) / TILE_SIZE;
-    int y1 = y_pos / TILE_SIZE;
-    int x2 = (x_pos + x_value + TILE_SIZE) / TILE_SIZE;
-    int y2 = (y_pos + TILE_SIZE) / TILE_SIZE;
-
-    if (x1 >= 0 && x2 < MAX_X && y1 >= 0 && y2 < MAX_Y) {
-        if (x_value > 0) //di sang phai
-        {
-            if (mymap.tile[y1][x2] != 0 && mymap.tile[y2][x2] != 0 && mymap.tile[y1][x2] != 4 &&
-                mymap.tile[y2][x2] != 4) {
-                x_pos = x2 * TILE_SIZE;
-                x_pos -= TILE_SIZE;
-                x_value = 0;
-            }
-        } else if (x_value < 0) {
-            if (mymap.tile[y1][x1] != 0 && mymap.tile[y2][x1] != 0 && mymap.tile[y1][x1] != 4 &&
-                mymap.tile[y2][x1] != 4) {
-                x_pos = (x1 + 1) * TILE_SIZE;
-                x_value = 0;
-            }
-        }
-    }
-
-    x1 = (x_pos) / TILE_SIZE;
-    y1 = (y_pos + y_value) / TILE_SIZE;
-    x2 = (x_pos + TILE_SIZE) / TILE_SIZE;
-    y2 = (y_pos + y_value + TILE_SIZE) / TILE_SIZE;
-
-    if (x1 >= 0 && x2 < MAX_X && y1 >= 0 && y2 < MAX_Y) {
-        if (y_value > 0) //roi xuong
-        {
-            if (mymap.tile[y2][x1] == 3 || mymap.tile[y2][x2] == 3) {
-                y_pos = y2 * TILE_SIZE;
-                y_pos -= TILE_SIZE;
-                y_value = 0;
-                Stand_on_ground = true;
-                type_input.fall = 0;
-            } else if ((mymap.tile[y2][x1] == 0 || mymap.tile[y2][x2] == 0 || mymap.tile[y2][x1] == 4 ||
-                        mymap.tile[y2][x2] == 4) && type_input.jump == 0) {
-                Stand_on_ground = false;
-                type_input.fall = 1;
-            } else { Stand_on_ground = false; }
-        } else if (y_value < 0) {
-            if (mymap.tile[y1][x1] != 0 || mymap.tile[y1][x2] != 0) {
-                if (mymap.tile[y1][x1] != 4 && mymap.tile[y1][x2] != 4) {
-                    y_pos = (y1 + 1) * TILE_SIZE;
-                    y_value = 0;
-                }
-            }
-        }
-    }
-
-    x_pos += x_value;
-    y_pos += y_value;
-
-    if (y_ground - y_pos >= MAXJUMP && !Stand_on_ground) {
-        type_input.jump = 0;
-        type_input.fall = 1;
-    }
-
-    if (x_pos < 0) x_pos = 0;
-    else if (x_pos + width_character > MAX_X * TILE_SIZE) x_pos = MAX_X * TILE_SIZE - width_character;
-    if (y_pos < 0) y_pos = 0;
-    else if (y_pos + height_character > MAX_Y * TILE_SIZE) {
-        y_pos = (MAX_Y + 1) * TILE_SIZE - height_character;
-        death = true;
-    };
-}
-
-void Player::MoveMap(currentMap &mymap) {
-    mymap.start_x_ = x_pos - (SCREEN_WIDTH / 2);
-    if (mymap.start_x_ < 0) mymap.start_x_ = 0;
-    else if (mymap.start_x_ + SCREEN_WIDTH >= (MAX_X * TILE_SIZE)) {
-        mymap.start_x_ = (MAX_X * TILE_SIZE) - SCREEN_WIDTH;
-    }
-    mymap.start_y_ = y_pos - (SCREEN_HEIGHT / 2);
-    if (mymap.start_y_ < 0) mymap.start_y_ = 0;
-    else if (mymap.start_y_ + SCREEN_HEIGHT >= (MAX_Y * TILE_SIZE)) {
-        mymap.start_y_ = (MAX_Y * TILE_SIZE) - SCREEN_HEIGHT;
-    }
-}
-
-void Player::Attacked() {
-    if (Is_Attacked_Left) {
-        if (Direction == Right || (Direction == Left && type_input.normal_attack == 0)) {
-            type_input.normal_attack = 0;
-            type_input.attacked = 1;
-        }
-    } else if (Is_Attackef_Right) {
-        if (Direction == Left || (Direction == Right && type_input.normal_attack == 0)) {
-            type_input.normal_attack = 0;
-            type_input.attacked = 1;
-        }
-    } else type_input.attacked = 0;
-    if (Is_Attacked_Left || Is_Attackef_Right) {
-        if (attacked_by == 1) {
-            HP -= 70;
-            HPDown += 70;
-        } else if (attacked_by == 3) {
-            HP -= 100;
-            HPDown += 100;
-        }
-        if (HPDown >= 1250) {
-            changeHealthBar = true;
-            HPDown -= 1250;
-        } else changeHealthBar = false;
-    }
-    if (HP <= 0) death = true;
-}
-
-void Player::Collect_Point(currentMap &mymap) {
-    int x1 = (x_pos + x_value) / TILE_SIZE;
-    int y1 = y_pos / TILE_SIZE;
-    int x2 = (x_pos + x_value + TILE_SIZE) / TILE_SIZE;
-    int y2 = (y_pos + TILE_SIZE) / TILE_SIZE;
-
-    if (x1 >= 0 && x2 < MAX_X && y1 >= 0 && y2 < MAX_Y) {
-        if (x_value > 0) //di sang phai
-        {
-            if (mymap.tile[y1][x2] == 4) {
-                mymap.tile[y1][x2] = 0;
-                collected_point++;
-            }
-            if (mymap.tile[y2][x2] == 4) {
-                mymap.tile[y2][x2] = 0;
-                collected_point++;
-            }
-        } else if (x_value < 0) {
-            if (mymap.tile[y1][x1] == 4) {
-                mymap.tile[y1][x1] = 0;
-                collected_point++;
-            }
-            if (mymap.tile[y2][x1] == 4) {
-                mymap.tile[y2][x1] = 0;
-                collected_point++;
-            }
-        }
-    }
-
-    x1 = (x_pos) / TILE_SIZE;
-    y1 = (y_pos + y_value) / TILE_SIZE;
-    x2 = (x_pos + TILE_SIZE) / TILE_SIZE;
-    y2 = (y_pos + y_value + TILE_SIZE) / TILE_SIZE;
-
-    if (x1 >= 0 && x2 < MAX_X && y1 >= 0 && y2 < MAX_Y) {
-        if (y_value > 0) //roi xuong
-        {
-            if (mymap.tile[y2][x1] == 4) {
-                mymap.tile[y2][x1] = 0;
-                collected_point++;
-            }
-            if (mymap.tile[y2][x2] == 4) {
-                mymap.tile[y2][x2] = 0;
-                collected_point++;
-            }
-        } else if (y_value < 0) {
-            if (mymap.tile[y1][x1] == 4) {
-                mymap.tile[y1][x1] = 0;
-                collected_point++;
-            }
-            if (mymap.tile[y1][x2] == 4) {
-                mymap.tile[y1][x2] = 0;
-                collected_point++;
-            }
-        }
-    }
-}
-
-bool Player::check_win() {
-    if (x_pos >= MAX_X * TILE_SIZE - 2 * TILE_SIZE && y_pos <= 4 * TILE_SIZE)
-        return true;
-    return false;
-}
-
-void Player::Open_Chain(currentMap &mymap) {
-    if (collected_point == 90) {
-        for (int y = 0; y <= 6; y++) {
-            mymap.tile[y][390] = 0;
-        }
-    }
-}
-
+    if (inputState.normalAttack == 1 && inputState.run == 1) {
+        if (
