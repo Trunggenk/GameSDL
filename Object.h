@@ -1,33 +1,28 @@
 #ifndef OBJECT_H_
 #define OBJECT_H_
 
-#include "SDL_Init.h"
-
-using namespace std;
+#include <string>
+#include <SDL.h>
+#include <SDL_image.h>
 
 class Object {
-protected:
-    SDL_Texture *myobject;
-    SDL_Rect rect_;
 public:
     Object();
-
     ~Object();
 
-    void SetRect(int x, int y) {
-        rect_.x = x;
-        rect_.y = y;
-    }
+    bool LoadImage(std::string path, SDL_Renderer* renderer);
+    void Render(SDL_Renderer* renderer, const SDL_Rect* clip = nullptr);
+    void Free();
 
     SDL_Rect GetRect() const { return rect_; }
+    SDL_Texture* GetTexture() const { return texture_; }
 
-    SDL_Texture *GetObject() const { return myobject; }
-
-    virtual bool LoadImg(string path, SDL_Renderer *renderer);
-
-    void Render(SDL_Renderer *des, const SDL_Rect *clip);
-
-    virtual void Free();
+private:
+    SDL_Texture* texture_;
+    SDL_Rect rect_;
+    const int kColorKeyRed = 0;
+    const int kColorKeyGreen = 0;
+    const int kColorKeyBlue = 0;
 };
 
-#endif
+#endif // OBJECT_H_

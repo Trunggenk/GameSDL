@@ -4,7 +4,7 @@
 using namespace std;
 
 Object::Object() {
-    myobject = NULL;
+    texture_ = NULL;
     rect_.x = 0;
     rect_.y = 0;
     rect_.w = 0;
@@ -15,31 +15,31 @@ Object::~Object() {
     Free();
 }
 
-bool Object::LoadImg(string path, SDL_Renderer *renderer) {
-    SDL_Texture *new_Texture = NULL;
-    SDL_Surface *loadedsurface = IMG_Load(path.c_str());
-    if (loadedsurface != NULL) {
-        SDL_SetColorKey(loadedsurface, SDL_TRUE, SDL_MapRGB(loadedsurface->format, Colorkey_R, Colorkey_G, Colorkey_B));
-        new_Texture = SDL_CreateTextureFromSurface(renderer, loadedsurface);
-        if (new_Texture != NULL) {
-            rect_.w = loadedsurface->w;
-            rect_.h = loadedsurface->h;
+bool Object::LoadImage(string path, SDL_Renderer *renderer) {
+    SDL_Texture *new_texture = NULL;
+    SDL_Surface *loaded_surface = IMG_Load(path.c_str());
+    if (loaded_surface != NULL) {
+        SDL_SetColorKey(loaded_surface, SDL_TRUE, SDL_MapRGB(loaded_surface->format, kColorKeyRed, kColorKeyGreen, kColorKeyBlue));
+        new_texture = SDL_CreateTextureFromSurface(renderer, loaded_surface);
+        if (new_texture != NULL) {
+            rect_.w = loaded_surface->w;
+            rect_.h = loaded_surface->h;
         }
-        SDL_FreeSurface(loadedsurface);
+        SDL_FreeSurface(loaded_surface);
     }
-    myobject = new_Texture;
-    return myobject != NULL;
+    texture_ = new_texture;
+    return texture_ != NULL;
 }
 
-void Object::Render(SDL_Renderer *des, const SDL_Rect *clip) {
-    SDL_Rect renderquad = {rect_.x, rect_.y, rect_.w, rect_.h};
-    SDL_RenderCopy(des, myobject, clip, &renderquad);
+void Object::Render(SDL_Renderer *renderer, const SDL_Rect *clip) {
+    SDL_Rect render_quad = {rect_.x, rect_.y, rect_.w, rect_.h};
+    SDL_RenderCopy(renderer, texture_, clip, &render_quad);
 }
 
 void Object::Free() {
-    if (myobject != NULL) {
-        SDL_DestroyTexture(myobject);
-        myobject = NULL;
+    if (texture_ != NULL) {
+        SDL_DestroyTexture(texture_);
+        texture_ = NULL;
         rect_.w = 0;
         rect_.h = 0;
     }
