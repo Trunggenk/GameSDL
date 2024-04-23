@@ -1,7 +1,7 @@
 #ifndef PLAYER_H_
 #define PLAYER_H_
 
-#include "SDLFunc.h"
+#include "SDL_Init.h"
 #include "Object.h"
 #include "mapgame.h"
 

@@ -1,13 +1,13 @@
 #include "Time.h"
-#include "SDLFunc.h"
+#include "SDL_Init.h"
 
 Time::Time() {
-    begin_t = 0;
-    paused_t = 0;
-    start_tim = 0;
-    sum_time = 0;
-    paused_ = false;
-    started_ = false;
+    startTime = 0;
+    pausedTime = 0;
+    gameStartTime = 0;
+    totalTime = 0;
+    isPaused = false;
+    isStarted = false;
 }
 
 Time::~Time() {
@@ -15,55 +15,55 @@ Time::~Time() {
 }
 
 void Time::run_game() {
-    start_tim = SDL_GetTicks();
+    gameStartTime = SDL_GetTicks();
 }
 
 void Time::begin() {
-    started_ = true;
-    paused_ = false;
-    begin_t = SDL_GetTicks();
+    isStarted = true;
+    isPaused = false;
+    startTime = SDL_GetTicks();
 }
 
 void Time::end() {
-    paused_ = false;
-    started_ = false;
+    isPaused = false;
+    isStarted = false;
 }
 
 void Time::pause() {
-    if (started_ == true && paused_ == false) {
-        paused_ = true;
-        start_tim = begin_t;
-        paused_t = SDL_GetTicks() - begin_t;
+    if (isStarted == true && isPaused == false) {
+        isPaused = true;
+        gameStartTime = startTime;
+        pausedTime = SDL_GetTicks() - startTime;
     }
 }
 
 void Time::unpause() {
-    if (paused_ == true) {
-        paused_ = false;
-        begin_t = SDL_GetTicks() - paused_t;
-        sum_time += paused_t;
-        paused_t = 0;
+    if (isPaused == true) {
+        isPaused = false;
+        startTime = SDL_GetTicks() - pausedTime;
+        totalTime += pausedTime;
+        pausedTime = 0;
     }
 }
 
 int Time::get_time() {
-    if (started_ == true) {
-        if (paused_ == true) return paused_t;
+    if (isStarted == true) {
+        if (isPaused == true) return pausedTime;
         else {
-            return SDL_GetTicks() - begin_t;
+            return SDL_GetTicks() - startTime;
         }
     }
     return 0;
 }
 
 bool Time::game_started() {
-    return started_;
+    return isStarted;
 }
 
 bool Time::game_paused() {
-    return paused_;
+    return isPaused;
 }
 
 int Time::time_played() {
-    return SDL_GetTicks() - start_tim - sum_time;
+    return SDL_GetTicks() - gameStartTime - totalTime;
 }

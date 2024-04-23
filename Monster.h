@@ -1,7 +1,7 @@
 #ifndef MONSTER_H_
 #define MONSTER_H_
 
-#include "SDLFunc.h"
+#include "SDL_Init.h"
 #include "Object.h"
 #include "Player.h"
 

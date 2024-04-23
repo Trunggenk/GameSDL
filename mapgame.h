@@ -1,7 +1,7 @@
 #ifndef MAP_GAME_H_
 #define MAP_GAME_H_
 
-#include "SDLFunc.h"
+#include "SDL_Init.h"
 #include "Object.h"
 
 #define MAX_TILES 10

@@ -1,6 +1,6 @@
 
-#ifndef SDL_FUNCTION_H_
-#define SDL_FUNCTION_H_
+#ifndef SDL_INIT_H_
+#define SDL_INIT_H_
 
 #include <iostream>
 #include <windows.h>

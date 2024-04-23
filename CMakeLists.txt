@@ -31,8 +31,8 @@ add_executable(${PROJECT_NAME}
         Bars_Health.cpp
         Monster.h
         Bars_Health.h
-        SDLFunc.cpp
-        SDLFunc.h
+        SDL_Init.cpp
+        SDL_Init.h
         Text.cpp
         Text.h
         Time.cpp

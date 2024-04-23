@@ -44,7 +44,11 @@ void MapGame::Load_Tiles(SDL_Renderer *renderer) {
     char img[50];
     FILE *fileptr = NULL;
     for (int i = 0; i < MAX_TILES; i++) {
-        sprintf_s(img, "map/%d.png", i);
+        if (i == 4) {
+            sprintf_s(img, "map/%d.gif", i);
+        } else {
+            sprintf_s(img, "map/%d.png", i);
+        }
         fopen_s(&fileptr, img, "rb");
         if (fileptr == NULL) {
             continue;

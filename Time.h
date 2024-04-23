@@ -4,20 +4,19 @@
 class Time {
 public:
     Time();
-
     ~Time();
 
-    void run_game();
 
     void begin();
+    void run_game();
 
-    void end();
 
     void pause();
+    void end();
+    int get_time();
 
     void unpause();
 
-    int get_time();
 
     bool game_started();
 
@@ -26,12 +25,12 @@ public:
     int time_played();
 
 private:
-    int begin_t;
-    int paused_t;
-    bool paused_;
-    bool started_;
-    int start_tim;
-    int sum_time;
+    int startTime;
+    int pausedTime;
+    bool isPaused;
+    bool isStarted;
+    int gameStartTime;
+    int totalTime;
 
 };
 

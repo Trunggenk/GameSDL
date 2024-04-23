@@ -98,8 +98,8 @@ build CMakeFiles/2dgame.dir/Bars_Health.cpp.obj: CXX_COMPILER__2dgame_unscanned_
   OBJECT_DIR = CMakeFiles\2dgame.dir
   OBJECT_FILE_DIR = CMakeFiles\2dgame.dir
 
-build CMakeFiles/2dgame.dir/SDLFunc.cpp.obj: CXX_COMPILER__2dgame_unscanned_Debug C$:/Users/trung/Desktop/2dgame/SDLFunc.cpp || cmake_object_order_depends_target_2dgame
-  DEP_FILE = CMakeFiles\2dgame.dir\SDLFunc.cpp.obj.d
+build CMakeFiles/2dgame.dir/SDL_Init.cpp.obj: CXX_COMPILER__2dgame_unscanned_Debug C$:/Users/trung/Desktop/2dgame/SDL_Init.cpp || cmake_object_order_depends_target_2dgame
+  DEP_FILE = CMakeFiles\2dgame.dir\SDL_Init.cpp.obj.d
   FLAGS = -g -fdiagnostics-color=always
   INCLUDES = -IC:/libs/SDL/include -IC:/libs/SDL2_image/include -IC:/libs/SDL2_ttf/include -IC:/libs/SDL2_mixer/include
   OBJECT_DIR = CMakeFiles\2dgame.dir
@@ -127,7 +127,7 @@ build CMakeFiles/2dgame.dir/Time.cpp.obj: CXX_COMPILER__2dgame_unscanned_Debug C
 #############################################
 # Link the executable 2dgame.exe
 
-build 2dgame.exe: CXX_EXECUTABLE_LINKER__2dgame_Debug CMakeFiles/2dgame.dir/Player.cpp.obj CMakeFiles/2dgame.dir/main.cpp.obj CMakeFiles/2dgame.dir/Menu.cpp.obj CMakeFiles/2dgame.dir/Monster.cpp.obj CMakeFiles/2dgame.dir/mapgame.cpp.obj CMakeFiles/2dgame.dir/Object.cpp.obj CMakeFiles/2dgame.dir/Bars_Health.cpp.obj CMakeFiles/2dgame.dir/SDLFunc.cpp.obj CMakeFiles/2dgame.dir/Text.cpp.obj CMakeFiles/2dgame.dir/Time.cpp.obj
+build 2dgame.exe: CXX_EXECUTABLE_LINKER__2dgame_Debug CMakeFiles/2dgame.dir/Player.cpp.obj CMakeFiles/2dgame.dir/main.cpp.obj CMakeFiles/2dgame.dir/Menu.cpp.obj CMakeFiles/2dgame.dir/Monster.cpp.obj CMakeFiles/2dgame.dir/mapgame.cpp.obj CMakeFiles/2dgame.dir/Object.cpp.obj CMakeFiles/2dgame.dir/Bars_Health.cpp.obj CMakeFiles/2dgame.dir/SDL_Init.cpp.obj CMakeFiles/2dgame.dir/Text.cpp.obj CMakeFiles/2dgame.dir/Time.cpp.obj
   FLAGS = -g
   LINK_LIBRARIES = -lSDL2main  -lSDL2  -lSDL2_image  -lSDL2_ttf  -lSDL2_mixer  -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32
   LINK_PATH = -LC:/libs/SDL/lib/x64   -LC:/libs/SDL2_image/lib/x64   -LC:/libs/SDL2_ttf/lib/x64   -LC:/libs/SDL2_mixer/lib/x64

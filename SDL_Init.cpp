@@ -1,5 +1,5 @@
 ﻿
-#include "SDLFunc.h"
+#include "SDL_Init.h"
 
 using namespace std;
 

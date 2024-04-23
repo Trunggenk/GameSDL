@@ -1,7 +1,7 @@
 #ifndef OBJECT_H_
 #define OBJECT_H_
 
-#include "SDLFunc.h"
+#include "SDL_Init.h"
 
 using namespace std;
 

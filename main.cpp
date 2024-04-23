@@ -80,8 +80,8 @@ int main(int argc, char *argv[]) {
     endMenu.set_menu_type(1);
     endMenu.set_color();
 
-    h1font = TTF_OpenFont("font/monogram.ttf", 60);
-    h2font = TTF_OpenFont("font/monogram.ttf", 60);
+    h1font = TTF_OpenFont("font/monogram.ttf", 40);
+    h2font = TTF_OpenFont("font/monogram.ttf", 80);
 
     while (!StartGame.run) {
         while (SDL_PollEvent(&e) != 0) {
