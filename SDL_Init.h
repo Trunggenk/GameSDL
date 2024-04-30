@@ -1,6 +1,5 @@
-
-#ifndef SDL_INIT_H_
-#define SDL_INIT_H_
+#ifndef MODIFIED_SDL_FUNCTION_H_
+#define MODIFIED_SDL_FUNCTION_H_
 
 #include <iostream>
 #include <windows.h>
@@ -13,49 +12,51 @@
 
 using namespace std;
 
-const int SCREEN_WIDTH = 1280;
-const int SCREEN_HEIGHT = 640;
-const string WINDOW_TITLE = "SASUKE FIGHT!!!";
+const int SCREEN_HEIGHT_MODIFIED = 640;
+const int R_MOD_COLORKEY_B = 255;
+const string WINDOW_TITLE_MODIFIED = "";
 
-const int Colorkey_R = 255;
-const int Colorkey_G = 255;
-const int Colorkey_B = 255;
+const int R_MOD_COLORKEY_R = 255;
+const int SCREEN_WIDTH_MODIFIED = 1280;
+const int R_MOD_COLORKEY_G = 255;
 
-void initSDL(SDL_Window *&window, SDL_Renderer *&renderer);
+void initModifiedSDL(SDL_Window*& window, SDL_Renderer*& renderer);
 
-void logSDLError(std::ostream &os,
-                 const std::string &msg, bool fatal);
+void quitModifiedSDL(SDL_Window* window, SDL_Renderer* renderer);
 
-void quitSDL(SDL_Window *window, SDL_Renderer *renderer);
+void waitUntilModifiedKeyPressed();
 
-void waitUntilKeyPressed();
+void logModifiedSDLError(std::ostream& os,
+                         const std::string& msg, bool fatal);
 
-SDL_Texture *loadBackGround(string path, SDL_Renderer *renderer);
+SDL_Texture* loadModifiedBackGround(string path, SDL_Renderer* renderer);
 
-#define TILE_SIZE 64
-#define MAX_X 400
-#define MAX_Y 10
-#define FPS 45
+#define TILE_SIZE_MODIFIED 64
+#define FPS_MODIFIED 45
+#define MAX_Y_MODIFIED 10
+#define MAX_X_MODIFIED 400
 
-const int time_present_one_frame = 1000 / FPS;
+const int time_present_one_frame_modified = 1000 / FPS_MODIFIED;
 
-typedef struct Input {
+typedef struct ModifiedInput
+{
+    int HoaDon;
+    int attacked;
+    int normal_attack;
     int stand;
-    int run;
     int jump;
     int fall;
-    int normal_attack;
-    int attacked;
-    int HoaDon;
+    int run;
 };
 
-typedef struct currentMap {
-    int start_x_;
+typedef struct ModifiedMap
+{
     int start_y_;
-    int pos_x_;
-    int pos_y_;
-    int tile[MAX_Y][MAX_X];
-    const char *mapname;
+    int start_x_;
+    int tile[MAX_Y_MODIFIED][MAX_X_MODIFIED];
+    int vitri_y_;
+    int vitri_x_;
+    const char* mapname;
 };
 
 #endif

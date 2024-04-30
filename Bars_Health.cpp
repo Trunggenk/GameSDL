@@ -1,57 +1,57 @@
-#include "Bars_Health.h"
+#include "HealthBar.h"
+#include <random>
 
-int getFrameNumber(int type_) {
-    if (type_ == 0) return 8;
+HealthBar::HealthBar() : width(0), height(0), currentFrame(0), posX(0), posY(0), type(-1), texture(nullptr, SDL_DestroyTexture) {}
+
+HealthBar::~HealthBar() {}
+
+int HealthBar::CalculateFrameCount(int type) {
+    return (type == 0) ? 6 : 4;
 }
 
-Bars::Bars() {
-    barWidth = 0;
-    barHeight = 0;
-    SDL_Rect gif[30];
-    currentFrame = 0;
-    mapX = 0;
-    mapY = 0;
-    type = -1;
+int HealthBar::SelectRandomFrame(int min, int max) {
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<> distr(min, max);
+    return distr(gen);
 }
 
-Bars::~Bars() {
-
+SDL_Color HealthBar::DetermineColor(int hp) {
+    if (hp > 7500) return {0, 255, 0, 255}; // Green for high health
+    else if (hp > 5000) return {255, 255, 0, 255}; // Yellow for medium health
+    else if (hp > 2500) return {255, 165, 0, 255}; // Orange for low health
+    else return {255, 0, 0, 255}; // Red for critical health
 }
 
-bool Bars::Loadimage(string path, SDL_Renderer *renderer) {
-    bool loadedimg = Object::LoadImg(path, renderer);
-    if (loadedimg == true) {
-        barWidth = rect_.w / getFrameNumber(type);
-        barHeight = rect_.h;
+bool HealthBar::LoadTexture(const std::string& filepath, SDL_Renderer* renderer) {
+    SDL_Texture* rawTexture = Object::LoadImg(filepath, renderer); // Assuming Object::LoadImg is defined elsewhere
+    if (rawTexture) {
+        texture.reset(rawTexture);
+        width = rect_.w / CalculateFrameCount(type);
+        height = rect_.h;
+        return true;
     }
-    return loadedimg;
+    return false;
 }
 
-void Bars::S_Frame() {
-    int frame_number_ = getFrameNumber(type);
-    for (int i = 0; i < frame_number_; i += 1) {
-        gif[i].x = i * barWidth;
-        gif[i].y = 0;
-        gif[i].w = barWidth;
-        gif[i].h = barHeight;
+void HealthBar::SetupFrames() {
+    int frameCount = CalculateFrameCount(type);
+    for (int i = 0; i < frameCount; ++i) {
+        frames[i].x = i * width;
+        frames[i].y = 0;
+        frames[i].w = width;
+        frames[i].h = height;
     }
 }
 
-void Bars::Display(Player sake, SDL_Renderer *des) {
-    if (type == Health) {
-        Loadimage("HealthBar.png", des);
+void HealthBar::Render(Player& character, SDL_Renderer* destination) {
+    if (type == Health) { // Assuming Health is defined as an enum or constant elsewhere
+        LoadTexture("HealthBar.png", destination);
     }
 
-    rect_.x = mapX;
-    rect_.y = mapY;
-    if (sake.HP >= 8750) currentFrame = 0;
-    else if (sake.HP >= 7000) currentFrame = 1;
-    else if (sake.HP >= 1000) currentFrame = 6;
-    else if (sake.HP >= 6000) currentFrame = 2;
-    else if (sake.HP >= 2000) currentFrame = 5;
-    else currentFrame = 7;
-    SDL_Rect *current_clip = &gif[currentFrame];
-    SDL_Rect renderQuad = {rect_.x, rect_.y, barWidth, barHeight};
-    SDL_RenderCopy(des, myobject, current_clip, &renderQuad);
-}
+    rect_.x = posX;
+    rect_.y = posY;
 
+    currentFrame = SelectRandomFrame(0, CalculateFrameCount(type) - 1);
+    SDL_Color color = DetermineColor(character.HP);
+    SDL_SetTextureColor

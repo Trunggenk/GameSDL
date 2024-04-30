@@ -1,37 +1,29 @@
-#ifndef Bars_Health
-#define Bars_Health
+#ifndef HEALTHBAR_H
+#define HEALTHBAR_H
 
-#include "Player.h"
+#include <SDL.h>
+#include <string>
+#include <memory>
+#include "Player.h"  // Assuming Player class is defined elsewhere
 
-class Bars : public Object {
+class HealthBar {
 public:
-
-    Bars();
-
-    ~Bars();
-
-    bool Loadimage(string path, SDL_Renderer *renderer);
-
-    void S_Frame();
-
-    void Display(Player sake, SDL_Renderer *des);
-
-    enum type {
-        Health = 0,
-        Mana = 1,
-    };
-
-    void set_type(int _type) { type = _type; }
+    HealthBar();
+    ~HealthBar();
+    bool LoadTexture(const std::string& filepath, SDL_Renderer* renderer);
+    void SetupFrames();
+    void Render(Player& character, SDL_Renderer* destination);
 
 private:
-    int barWidth;
-    int barHeight;
-    SDL_Rect gif[30];
-    int currentFrame;
-    int mapX;
-    int mapY;
-    int type;
+    int width, height, currentFrame;
+    SDL_Rect frames[10];
+    int posX, posY, type;
+    SDL_Rect rect_;
+    std::unique_ptr<SDL_Texture, void(*)(SDL_Texture*)> texture;
+
+    int CalculateFrameCount(int type);
+    int SelectRandomFrame(int min, int max);
+    SDL_Color DetermineColor(int hp);
 };
 
-
-#endif
+#endif // HEALTHBAR_H
