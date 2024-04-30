@@ -1,5 +1,5 @@
-#ifndef MODIFIED_SDL_FUNCTION_H_
-#define MODIFIED_SDL_FUNCTION_H_
+#ifndef CUSTOM_SDL_UTILS_H_
+#define CUSTOM_SDL_UTILS_H_
 
 #include <iostream>
 #include <windows.h>
@@ -12,51 +12,50 @@
 
 using namespace std;
 
-const int SCREEN_HEIGHT_MODIFIED = 640;
-const int R_MOD_COLORKEY_B = 255;
-const string WINDOW_TITLE_MODIFIED = "";
+const int DISPLAY_HEIGHT = 640;
+const int COL_KEY_BLUE = 255;
+const string APP_WINDOW_TITLE = "";
 
-const int R_MOD_COLORKEY_R = 255;
-const int SCREEN_WIDTH_MODIFIED = 1280;
-const int R_MOD_COLORKEY_G = 255;
+const int COL_KEY_RED = 255;
+const int DISPLAY_WIDTH = 1280;
+const int COL_KEY_GREEN = 255;
 
-void initModifiedSDL(SDL_Window*& window, SDL_Renderer*& renderer);
+void initializeSDL(SDL_Window*& appWindow, SDL_Renderer*& appRenderer);
 
-void quitModifiedSDL(SDL_Window* window, SDL_Renderer* renderer);
+void shutdownSDL(SDL_Window* appWindow, SDL_Renderer* appRenderer);
 
-void waitUntilModifiedKeyPressed();
+void waitForKeyPress();
 
-void logModifiedSDLError(std::ostream& os,
-                         const std::string& msg, bool fatal);
+void logSDLError(std::ostream& os, const std::string& message, bool isFatal);
 
-SDL_Texture* loadModifiedBackGround(string path, SDL_Renderer* renderer);
+SDL_Texture* loadTextureFromFile(string filePath, SDL_Renderer* appRenderer);
 
-#define TILE_SIZE_MODIFIED 64
-#define FPS_MODIFIED 45
-#define MAX_Y_MODIFIED 10
-#define MAX_X_MODIFIED 400
+#define TILE_DIMENSION 64
+#define FRAME_RATE 45
+#define MAP_MAX_ROWS 10
+#define MAP_MAX_COLUMNS 400
 
-const int time_present_one_frame_modified = 1000 / FPS_MODIFIED;
+const int TIME_PER_FRAME = 1000 / FRAME_RATE;
 
-typedef struct ModifiedInput
+typedef struct CustomInput
 {
-    int HoaDon;
-    int attacked;
-    int normal_attack;
-    int stand;
-    int jump;
-    int fall;
-    int run;
+    int invoice;
+    int hit;
+    int lightAttack;
+    int idle;
+    int leap;
+    int descend;
+    int sprint;
 };
 
-typedef struct ModifiedMap
+typedef struct CustomMap
 {
-    int start_y_;
-    int start_x_;
-    int tile[MAX_Y_MODIFIED][MAX_X_MODIFIED];
-    int vitri_y_;
-    int vitri_x_;
-    const char* mapname;
+    int offsetY;
+    int offsetX;
+    int tiles[MAP_MAX_ROWS][MAP_MAX_COLUMNS];
+    int positionY;
+    int positionX;
+    const char* mapFileName;
 };
 
 #endif
