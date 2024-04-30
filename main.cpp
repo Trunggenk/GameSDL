@@ -1,193 +1,221 @@
-#include "SDL.h"
-#include "SDL_image.h"
-#include "SDL_ttf.h"
-#include "SDL_mixer.h"
 #include "Monster.h"
 #include "Bars_Health.h"
 #include "Menu.h"
 #include "Time.h"
-#include <vector>
-#include <string>
-#include <iostream>
 
+SDL_Window *appWindow;
+SDL_Renderer *appRenderer;
+SDL_Event appEvent;
+Mix_Music *bgMusic;
+TTF_Font *titleFont;
+TTF_Font *menuFont;
 using namespace std;
 
-SDL_Window* window;
-SDL_Renderer* renderer;
-SDL_Event e;
-Mix_Music* sound;
-TTF_Font* h1font;
-TTF_Font* h2font;
-
-bool Init() {
-    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0) {
-        cout << "SDL could not initialize! SDL Error: " << SDL_GetError() << endl;
-        return false;
+vector<Creature *> SpawnCreatures(int numberOfCreatures, int creatureType, double initialPosition, double finalPosition) {
+    vector<Creature *> creatures;
+    Creature *creaturePool = new Creature[20];
+    string imagePath;
+    if (creatureType == 1) imagePath = "Creature/Type1/creature_run_left.png";
+    else if (creatureType == 3) imagePath = "Creature/Type3/creature_run_left.png";
+    for (int i = 0; i < numberOfCreatures; i++) {
+        Creature *creature = (creaturePool + i);
+        creature->setType(creatureType);
+        if (creature != NULL) {
+            creature->loadImage(imagePath, appRenderer);
+            creature->initializeClips();
+            creature->setXPosition((initialPosition + i * ((finalPosition - initialPosition) / numberOfCreatures)) * TILE_SIZE);
+            creature->setMidPoint(creature->getXPosition());
+            creature->setYPosition(2 * TILE_SIZE);
+            creature->setMovementRange(creature->getXPosition());
+            creature->initializeHealth(creatureType);
+            creatures.push_back(creature);
+        }
     }
-
-    window = SDL_CreateWindow("Game Title", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 800, 600, SDL_WINDOW_SHOWN);
-    if (window == NULL) {
-        cout << "Window could not be created! SDL Error: " << SDL_GetError() << endl;
-        return false;
-    }
-
-    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
-    if (renderer == NULL) {
-        cout << "Renderer could not be created! SDL Error: " << SDL_GetError() << endl;
-        return false;
-    }
-
-    if (!(IMG_Init(IMG_INIT_PNG) & IMG_INIT_PNG)) {
-        cout << "SDL_image could not initialize! SDL_image Error: " << IMG_GetError() << endl;
-        return false;
-    }
-
-    if (TTF_Init() == -1) {
-        cout << "SDL_ttf could not initialize! SDL_ttf Error: " << TTF_GetError() << endl;
-        return false;
-    }
-
-    if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0) {
-        cout << "SDL_mixer could not initialize! SDL_mixer Error: " << Mix_GetError() << endl;
-        return false;
-    }
-
-    return true;
+    return creatures;
 }
 
-void Close() {
-    SDL_DestroyRenderer(renderer);
-    SDL_DestroyWindow(window);
-    Mix_FreeMusic(sound);
-    TTF_CloseFont(h1font);
-    TTF_CloseFont(h2font);
-
-    window = NULL;
-    renderer = NULL;
-    sound = NULL;
-    h1font = NULL;
-    h2font = NULL;
-
-    Mix_Quit();
-    TTF_Quit();
-    IMG_Quit();
-    SDL_Quit();
-}
-
-SDL_Texture* LoadTexture(string path) {
-    SDL_Texture* newTexture = IMG_LoadTexture(renderer, path.c_str());
-    if (newTexture == NULL) {
-        cout << "Unable to load texture! SDL_image Error: " << IMG_GetError() << endl;
-    }
-    return newTexture;
-}
-
-vector<Monster*> CreateMonsterList(int count, int type, double startPos, double endPos) {
-    vector<Monster*> monsters;
-    Monster* monsterArray = new Monster[20];
-    string imgPath = (type == 1) ? "assets/images/monsters/1/m1_run_left.png" : "assets/images/monsters/3/m3_run_left.png";
-
-    for (int i = 0; i < count; i++) {
-        Monster* monster = (monsterArray + i);
-        monster->set_type(type);
-        monster->LoadImg(imgPath, renderer);
-        monster->set_clips();
-        monster->set_x_pos((startPos + i * ((endPos - startPos) / count)) * TILE_SIZE);
-        monster->set_Mid(monster->get_x_pos());
-        monster->set_y_pos(2 * TILE_SIZE);
-        monster->set_range(monster->get_x_pos());
-        monster->set_Mon_HP(type);
-        monsters.push_back(monster);
-    }
-    return monsters;
-}
-
-void RefreshMonsters(vector<Monster*>& monsters, currentMap gameMap, Player& gamePlayer) {
-    for (auto& monster : monsters) {
-        if (monster && monster->Is_Dead()) {
-            monster = nullptr;
+void ManageCreatures(vector<Creature *> &creatures, GameMap &map, Player &player) {
+    for (int i = 0; i < creatures.size(); i++) {
+        Creature *creature = creatures[i];
+        if (creature != nullptr && creature->isDefeated()) {
+            creatures[i] = nullptr;
             continue;
         }
-        if (monster && monster->Meet_Sasuke_(gameMap)) {
-            monster->SetMapXY(gameMap.start_x_, gameMap.start_y_);
-            monster->MonsterMove(gameMap);
-            if (gamePlayer.x_pos < monster->get_begin() || gamePlayer.x_pos > monster->get_end()) {
-                monster->MoveAround();
+        if (creature != nullptr && creature->detectPlayer(map)) {
+            creature->updateMapPosition(map.startX, map.startY);
+            creature->move(map);
+            if (player.getXPosition() < creature->getStart() || player.getXPosition() > creature->getEnd()) {
+                creature->patrolArea();
             } else {
-                monster->Action(gamePlayer);
-                monster->Attack(gamePlayer);
-                monster->Is_Attacked(gamePlayer);
+                creature->engage(player);
+                creature->attack(player);
+                creature->receiveDamage(player);
             }
-            monster->Present(renderer);
-        } else if (monster && !(monster->Meet_Sasuke_(gameMap))) {
-            if (gamePlayer.x_pos + SCREEN_WIDTH >= monster->get_x_pos() &&
-                gamePlayer.x_pos - SCREEN_WIDTH <= monster->get_x_pos()) {
-                monster->SetMapXY(gameMap.start_x_, gameMap.start_y_);
-                monster->MonsterMove(gameMap);
-                monster->MoveAround();
-                monster->Present(renderer);
+            creature->render(appRenderer);
+        } else if (creature != nullptr && !creature->detectPlayer(map)) {
+            if (player.getXPosition() + SCREEN_WIDTH >= creature->getXPosition() &&
+                player.getXPosition() - SCREEN_WIDTH <= creature->getXPosition()) {
+                creature->updateMapPosition(map.startX, map.startY);
+                creature->move(map);
+                creature->patrolArea();
+                creature->render(appRenderer);
             }
         }
     }
 }
 
-int main(int argc, char* argv[]) {
-    if (!Init()) {
-        cout << "Failed to initialize!" << endl;
-        return -1;
-    }
+int main(int argc, char *argv[]) {
+    initializeSDL(appWindow, appRenderer);
+    bool gameEnded = false;
+    bool gameActive = false;
+    Chrono gameChrono;
+    bgMusic = Mix_LoadMUS("background_music.mp3");
+    Mix_PlayMusic(bgMusic, -1);
+    SDL_Texture *startBackground = loadTexture("Interface/StartScreen.jpg", appRenderer);
 
-    sound = Mix_LoadMUS("assets/sounds/gameost.mp3");
-    if (sound == NULL) {
-        cout << "Failed to load beat music! SDL_mixer Error: " << Mix_GetError() << endl;
-        return -1;
-    }
-    Mix_PlayMusic(sound, -1);
+    UserInterface mainMenu;
+    mainMenu.setMenuType(0);
+    mainMenu.setMenuColor();
 
-    SDL_Texture* startBackground = LoadTexture("assets/images/menu/start.jpg");
-    SDL_Texture* gameBackground = LoadTexture("assets/images/game_background.jpg");
-    SDL_Texture* winBackground = LoadTexture("assets/images/menu/menu_win.png");
-    SDL_Texture* loseBackground = LoadTexture("assets/images/menu/menu_lose.png");
+    UserInterface endMenu;
+    endMenu.setMenuType(1);
+    endMenu.setMenuColor();
 
-    h1font = TTF_OpenFont("assets/fonts/monogram.ttf", 40);
-    h2font = TTF_OpenFont("assets/fonts/monogram.ttf", 80);
+    titleFont = TTF_OpenFont("fonts/game_font.ttf", 40);
+    menuFont = TTF_OpenFont("fonts/game_font.ttf", 80);
 
-    Menu startMenu, endMenu;
-    startMenu.set_menu_type(0);
-    endMenu.set_menu_type(1);
-
-    bool gameOver = false;
-    bool gameIsRunning = false;
-    Time gameTimer;
-
-    while (!startMenu.run) {
-        while (SDL_PollEvent(&e) != 0) {
-            if (e.type == SDL_QUIT) {
-                startMenu.exit = true;
+    while (!mainMenu.isMenuActive()) {
+        while (SDL_PollEvent(&appEvent) != 0) {
+            if (appEvent.type == SDL_QUIT) {
+                mainMenu.setExitFlag(true);
             }
-            startMenu.HandleInputMenu(e, renderer);
+            mainMenu.handleMenuInput(appEvent, appRenderer);
         }
-        SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-        SDL_RenderClear(renderer);
-        SDL_RenderCopy(renderer, startBackground, NULL, NULL);
-        startMenu.SetMenu(h2font, renderer);
-        SDL_RenderPresent(renderer);
+        SDL_SetRenderDrawColor(appRenderer, 255, 255, 255, 255);
+        SDL_RenderClear(appRenderer);
+        SDL_RenderCopy(appRenderer, startBackground, NULL, NULL);
+        mainMenu.displayMenu(menuFont, appRenderer);
+        SDL_RenderPresent(appRenderer);
     }
 
-    if (startMenu.run) {
-        gameIsRunning = true;
-        endMenu.run = true;
+    if (mainMenu.isMenuActive()) {
+        gameActive = true;
+        endMenu.setMenuActive(true);
+        startBackground = loadTexture("images/game_background.jpg", appRenderer);
     }
 
-    while (gameIsRunning) {
-        if (endMenu.run) {
-            MapGame mapgame;
-            mapgame.Load_Map();
-            mapgame.Load_Tiles(renderer);
+    while (gameActive) {
+        if (endMenu.isMenuActive()) {
+            GameMap currentMap;
+            currentMap.loadMapData();
+            currentMap.loadTiles(appRenderer);
 
             Player gamePlayer;
-            gamePlayer.y_pos = 0 * TILE_SIZE;
-            gamePlayer.LoadImg("assets/images/player/stand_right.png", renderer);
-            gamePlayer.Set_Frame();
-            vector<Monster*> monsters = CreateMonsterList(10, 1, 120, 117);
-            Bars healthBar
+            gamePlayer.setYPosition(0 * TILE_SIZE);
+            gamePlayer.loadImage("Player/player_stand_right.png", appRenderer);
+            gamePlayer.initializeFrame();
+            vector<Creature *> creatures = SpawnCreatures(10, 1, 120, 117);
+            HealthSystem healthSystem;
+            healthSystem.setHealthType(0);
+            healthSystem.loadImage("Health/HealthBar.png", appRenderer);
+            healthSystem.initializeFrame();
+            string finalScore;
+            Text elapsedTimeText;
+            Text scoreText;
+            elapsedTimeText.setColor(Text::WHITE_TEXT);
+            scoreText.setColor(Text::WHITE_TEXT);
+            SDL_RenderCopy(appRenderer, startBackground, NULL, NULL);
+            gameChrono.start();
+            while (!gameEnded) {
+                gameChrono.startFrame();
+                while (SDL_PollEvent(&appEvent) != 0) {
+                    if (appEvent.type == SDL_QUIT) {
+                        gameEnded = true;
+                        endMenu.setMenuActive(false);
+                        gameActive = false;
+                    }
+                    if (gamePlayer.isDead() || gamePlayer.hasWon()) {
+                        endMenu.checkWinStatus(gamePlayer.hasWon());
+                        gameEnded = true;
+                    }
+                    gamePlayer.processInput(appEvent, appRenderer);
+                }
+                SDL_SetRenderDrawColor(appRenderer, 255, 255, 255, 255);
+                SDL_RenderClear(appRenderer);
+                SDL_RenderCopy(appRenderer, startBackground, NULL, NULL);
+                GameMap activeMap = currentMap.getMap();
+                gamePlayer.updateMapPosition(activeMap.startX, activeMap.startY);
+                gamePlayer.move(activeMap);
+                gamePlayer.detectDamage();
+                gamePlayer.updateFrame();
+                gamePlayer.collectPoints(activeMap);
+                gamePlayer.unlockPath(activeMap);
+                gamePlayer.render(appRenderer);
+                gamePlayer.resetDamageFlags();
+                healthSystem.render(gamePlayer, appRenderer);
+                currentMap.setMap(activeMap);
+                currentMap.drawMap(appRenderer);
+                ManageCreatures(creatures, activeMap, gamePlayer);
+                string timeDisplay = "Time: ";
+                Uint32 elapsedTime = gameChrono.getElapsedTime() / 1000;
+                timeDisplay += to_string(elapsedTime);
+                elapsedTimeText.setText(timeDisplay);
+                elapsedTimeText.loadFromRenderedText(titleFont, appRenderer);
+                elapsedTimeText.render(appRenderer, SCREEN_WIDTH - 2.5 * TILE_SIZE, 15);
+
+                string scoreDisplay = "Score: ";
+                Uint32 points = gamePlayer.getPoints();
+                scoreDisplay += to_string(points);
+                scoreText.setText(scoreDisplay);
+                scoreText.loadFromRenderedText(titleFont, appRenderer);
+                scoreText.render(appRenderer, SCREEN_WIDTH / 2 - TILE_SIZE, 15);
+
+                finalScore = "YOUR SCORE: " + to_string(elapsedTime) + "s";
+
+                SDL_RenderPresent(appRenderer);
+
+                int frameTime = gameChrono.getFrameTime();
+                if (frameTime < FRAME_DELAY) {
+                    SDL_Delay(FRAME_DELAY - frameTime);
+                }
+            }
+
+            SDL_RenderClear(appRenderer);
+
+            if (endMenu.isMenuActive()) {
+                if (endMenu.hasWon()) {
+                    startBackground = loadTexture("Interface/WinScreen.jpg", appRenderer);
+                    endMenu.displayFinalScore(finalScore);
+                } else {
+                    startBackground = loadTexture("Interface/LoseScreen.jpg", appRenderer);
+                }
+                endMenu.setMenuColor();
+            }
+
+            while (!endMenu.isMenuClosed() && endMenu.isMenuActive()) {
+                SDL_SetRenderDrawColor(appRenderer, 255, 255, 255, 255);
+                SDL_RenderClear(appRenderer);
+                SDL_RenderCopy(appRenderer, startBackground, NULL, NULL);
+                endMenu.displayMenu(menuFont, appRenderer);
+                SDL_RenderPresent(appRenderer);
+                while (SDL_PollEvent(&appEvent) != 0) {
+                    if (appEvent.type == SDL_QUIT) {
+                        endMenu.setMenuActive(false);
+                        endMenu.setMenuClosed(true);
+                        gameActive = false;
+                    }
+                    endMenu.handleMenuInput(appEvent, appRenderer);
+                }
+            }
+            if (endMenu.isMenuActive()) {
+                startBackground = loadTexture("images/game_background.jpg", appRenderer);
+                gameEnded = false;
+                endMenu.setMenuClosed(false);
+            } else {
+                gameActive = false;
+            }
+        }
+    }
+
+    return 0;
+}
