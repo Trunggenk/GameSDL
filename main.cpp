@@ -149,8 +149,7 @@ int main(int argc, char* argv[])
 
             Player player;
             player.y_pos = 0 * TILE_SIZE;
-            //player.x_pos =380 * TILE_SIZE;    /*check win*/
-            //player.collected_point = 90;
+
             player.LoadImg("Player/sasuke_stand_right_official.png", renderer);
             player.Set_Frame();
 
