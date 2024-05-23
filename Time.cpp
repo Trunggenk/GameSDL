@@ -1,69 +1,79 @@
-#include "Time.h"
 #include "SDL_Init.h"
+
+class Time {
+public:
+    Time();
+    ~Time();
+    
+    void start();
+    void stop();
+    void pause();
+    void resume();
+    int getTime();
+    bool isGameRunning();
+    bool isGamePaused();
+    int getTimePlayed();
+
+private:
+    Uint32 startTime;
+    Uint32 gameStartTime;
+    Uint32 totalTime;
+    bool isRunning;
+    bool isPaused;
+};
 
 Time::Time() {
     startTime = 0;
-    pausedTime = 0;
     gameStartTime = 0;
     totalTime = 0;
+    isRunning = false;
     isPaused = false;
-    isStarted = false;
 }
 
-Time::~Time() {
+Time::~Time() {}
 
-}
-
-void Time::run_game() {
-    gameStartTime = SDL_GetTicks();
-}
-
-void Time::begin() {
-    isStarted = true;
+void Time::start() {
+    isRunning = true;
     isPaused = false;
     startTime = SDL_GetTicks();
+    gameStartTime = startTime;
 }
 
-void Time::end() {
+void Time::stop() {
+    isRunning = false;
     isPaused = false;
-    isStarted = false;
 }
 
 void Time::pause() {
-    if (isStarted == true && isPaused == false) {
+    if (isRunning && !isPaused) {
         isPaused = true;
-        gameStartTime = startTime;
-        pausedTime = SDL_GetTicks() - startTime;
+        totalTime += SDL_GetTicks() - startTime;
     }
 }
 
-void Time::unpause() {
-    if (isPaused == true) {
+void Time::resume() {
+    if (isPaused) {
         isPaused = false;
-        startTime = SDL_GetTicks() - pausedTime;
-        totalTime += pausedTime;
-        pausedTime = 0;
+        startTime = SDL_GetTicks();
     }
 }
 
-int Time::get_time() {
-    if (isStarted == true) {
-        if (isPaused == true) return pausedTime;
-        else {
-            return SDL_GetTicks() - startTime;
-        }
+int Time::getTime() {
+    if (isRunning) {
+        if (isPaused) return totalTime;
+        else return SDL_GetTicks() - startTime + totalTime;
     }
     return 0;
 }
 
-bool Time::game_started() {
-    return isStarted;
+bool Time::isGameRunning() {
+    return isRunning;
 }
 
-bool Time::game_paused() {
+bool Time::isGamePaused() {
     return isPaused;
 }
 
-int Time::time_played() {
-    return SDL_GetTicks() - gameStartTime - totalTime;
+int Time::getTimePlayed() {
+    return SDL_GetTicks() - gameStartTime;
 }
