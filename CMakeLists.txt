@@ -24,9 +24,7 @@ add_executable(${PROJECT_NAME}
         Menu.h
         main.cpp
         Menu.cpp
-        Object.h
         mapgame.cpp
-        Object.cpp
         Bars_Health.cpp
         Bars_Health.h
         SDL_Init.cpp
