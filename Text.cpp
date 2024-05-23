@@ -1,62 +1,60 @@
 #include "Text.h"
 
-Text::Text() {
-    text_color_.r = 255;
-    text_color_.g = 255;
-    text_color_.b = 255;
-    texture_ = NULL;
+TextHandler::TextHandler() {
+    text_color_ = {255, 255, 255};
+    texture_ = nullptr;
 }
 
-Text::~Text() {
-
+TextHandler::~TextHandler() {
+    Free();
 }
 
-
-bool Text::LoadFromRenderText(TTF_Font *font, SDL_Renderer *screen) {
+bool TextHandler::LoadFromRenderText(TTF_Font *font, SDL_Renderer *renderer) {
     SDL_Surface *text_surface = TTF_RenderText_Solid(font, str_val_.c_str(), text_color_);
     if (text_surface) {
-        texture_ = SDL_CreateTextureFromSurface(screen, text_surface);
-        width_ = text_surface->w;
-        height_ = text_surface->h;
+        texture_ = SDL_CreateTextureFromSurface(renderer, text_surface);
+        if (texture_) {
+            width_ = text_surface->w;
+            height_ = text_surface->h;
+        }
         SDL_FreeSurface(text_surface);
     }
-    return texture_ != NULL;
+    return texture_ != nullptr;
 }
 
-void Text::Free() {
-    if (texture_ != NULL) {
+void TextHandler::Free() {
+    if (texture_) {
         SDL_DestroyTexture(texture_);
-        texture_ = NULL;
+        texture_ = nullptr;
     }
 }
 
-void Text::SetColor(Uint8 red, Uint8 green, Uint8 blue) {
-    text_color_.r = red;
-    text_color_.g = green;
-    text_color_.b = blue;
+void TextHandler::SetColor(Uint8 red, Uint8 green, Uint8 blue) {
+    text_color_ = {red, green, blue};
 }
 
-void Text::SetColor(int type) {
-    if (type == RED_TEXT) {
-        SDL_Color color = {180, 0, 0};
-        text_color_ = color;
-    } else if (type == WHITE_TEXT) {
-        SDL_Color color = {255, 255, 255};
-        text_color_ = color;
-    } else if (type == BLACK_TEXT) {
-        SDL_Color color = {0, 0, 0};
-        text_color_ = color;
+void TextHandler::SetColor(int type) {
+    switch (type) {
+        case RED_TEXT:
+            text_color_ = {180, 0, 0};
+            break;
+        case WHITE_TEXT:
+            text_color_ = {255, 255, 255};
+            break;
+        case BLACK_TEXT:
+            text_color_ = {0, 0, 0};
+            break;
+        default:
+            break;
     }
 }
 
-void Text::RenderText(SDL_Renderer *renderer, int xp, int yp, SDL_Rect *clip, double angle, SDL_Point *center,
-                      SDL_RendererFlip flip) {
-    x_pos = xp;
-    y_pos = yp;
-    SDL_Rect renderquad = {xp, yp, width_, height_};
-    if (clip != NULL) {
-        renderquad.w = clip->w;
-        renderquad.h = clip->h;
+void TextHandler::RenderText(SDL_Renderer *renderer, int x, int y, SDL_Rect *clip, double angle, SDL_Point *center,
+                             SDL_RendererFlip flip) {
+    SDL_Rect render_quad = {x, y, width_, height_};
+    if (clip) {
+        render_quad.w = clip->w;
+        render_quad.h = clip->h;
     }
-    SDL_RenderCopyEx(renderer, texture_, clip, &renderquad, angle, center, flip);
+    SDL_RenderCopyEx(renderer, texture_, clip, &render_quad, angle, center, flip);
 }
