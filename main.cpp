@@ -1,7 +1,7 @@
-﻿#include "Bars_Health.h"
-#include "Time.h"
 #include "Monster.h"
+#include "Bars_Health.h"
 #include "Menu.h"
+#include "Time.h"
 
 SDL_Window *window;
 SDL_Renderer *renderer;
@@ -11,59 +11,60 @@ TTF_Font *h1font;
 TTF_Font *h2font;
 using namespace std;
 
-vector<Monster *> GenerateMonsterList(int monsterCount, int monsterType, double startPos, double endPos) {
-    vector<Monster *> monsterList;
+vector<Monster *> CreateMonsterList(int monsterCount, int monsterType, double startPos, double endPos) {
+    vector<Monster *> monsters;
     Monster *monsterArray = new Monster[20];
-    string imagePath;
-    if (monsterType == 1) imagePath = "Monster/1/m1_run_left.png";
-    else if (monsterType == 3) imagePath = "Monster/3/m3_run_left.png";
+    string imgPath;
+    if (monsterType == 1) imgPath = "Monster/1/m1_run_left.png";
+    else if (monsterType == 3) imgPath = "Monster/3/m3_run_left.png";
     for (int i = 0; i < monsterCount; i++) {
-        Monster *newMonster = (monsterArray + i);
-        newMonster->set_type(monsterType);
-        if (newMonster != NULL) {
-            newMonster->LoadImg(imagePath, renderer);
-            newMonster->set_clips();
-            newMonster->set_x_pos((startPos + i * ((endPos - startPos) / monsterCount)) * TILE_SIZE);
-            newMonster->set_Mid(newMonster->get_x_pos());
-            newMonster->set_y_pos(2 * TILE_SIZE);
-            newMonster->set_range(newMonster->get_x_pos());
-            newMonster->set_Mon_HP(monsterType);
-            monsterList.push_back(newMonster);
+        Monster *monster = (monsterArray + i);
+        monster->set_type(monsterType);
+        if (monster != NULL) {
+            monster->LoadImg(imgPath, renderer);
+            monster->set_clips();
+            monster->set_x_pos((startPos + i * ((endPos - startPos) / monsterCount)) * TILE_SIZE);
+            monster->set_Mid(monster->get_x_pos());
+            monster->set_y_pos(2 * TILE_SIZE);
+            monster->set_range(monster->get_x_pos());
+            monster->set_Mon_HP(monsterType);
+            monsters.push_back(monster);
         }
     }
-    return monsterList;
+    return monsters;
 }
-void UpdateMonsters(vector<Monster *> &monsterList, currentMap gameMap, Player &gamePlayer) {
-    for (int index = 0; index < monsterList.size(); index++) {
-        Monster *currentMonster = monsterList[index];
-        if (currentMonster != nullptr && currentMonster->Is_Dead()) {
-            monsterList[index] = nullptr;
+
+void RefreshMonsters(vector<Monster *> &monsters, currentMap gameMap, Player &gamePlayer) {
+    for (int i = 0; i < monsters.size(); i++) {
+        Monster *monster = monsters[i];
+        if (monster != nullptr && monster->Is_Dead()) {
+            monsters[i] = nullptr;
             continue;
         }
-        if (currentMonster != nullptr && currentMonster->Meet_Sasuke_(gameMap)) {
-            currentMonster->SetMapXY(gameMap.start_x_, gameMap.start_y_);
-            currentMonster->MonsterMove(gameMap);
-            if (gamePlayer.x_pos < currentMonster->get_begin() || gamePlayer.x_pos > currentMonster->get_end()) {
-                currentMonster->MoveAround();
+        if (monster != nullptr && monster->Meet_Sasuke_(gameMap)) {
+            monster->SetMapXY(gameMap.start_x_, gameMap.start_y_);
+            monster->MonsterMove(gameMap);
+            if (gamePlayer.x_pos < monster->get_begin() || gamePlayer.x_pos > monster->get_end()) {
+                monster->MoveAround();
             } else {
-                currentMonster->Action(gamePlayer);
-                currentMonster->Attack(gamePlayer);
-                currentMonster->Is_Attacked(gamePlayer);
+                monster->Action(gamePlayer);
+                monster->Attack(gamePlayer);
+                monster->Is_Attacked(gamePlayer);
             }
-            currentMonster->Present(renderer);
-        } else if (currentMonster != nullptr && !(currentMonster->Meet_Sasuke_(gameMap))) {
-            if (gamePlayer.x_pos + SCREEN_WIDTH >= currentMonster->get_x_pos() &&
-                gamePlayer.x_pos - SCREEN_WIDTH <= currentMonster->get_x_pos()) {
-                currentMonster->SetMapXY(gameMap.start_x_, gameMap.start_y_);
-                currentMonster->MonsterMove(gameMap);
-                currentMonster->MoveAround();
-                currentMonster->Present(renderer);
+            monster->Present(renderer);
+        } else if (monster != nullptr && !(monster->Meet_Sasuke_(gameMap))) {
+            if (gamePlayer.x_pos + SCREEN_WIDTH >= monster->get_x_pos() &&
+                gamePlayer.x_pos - SCREEN_WIDTH <= monster->get_x_pos()) {
+                monster->SetMapXY(gameMap.start_x_, gameMap.start_y_);
+                monster->MonsterMove(gameMap);
+                monster->MoveAround();
+                monster->Present(renderer);
             }
         }
     }
 }
-int main(int argc, char *argv[]) {
 
+int main(int argc, char *argv[]) {
     initSDL(window, renderer);
     bool gameOver = false;
     bool gameIsRunning = false;
@@ -72,9 +73,9 @@ int main(int argc, char *argv[]) {
     Mix_PlayMusic(sound, -1);
     SDL_Texture *gameBackground = loadBackGround("Menu/Start.jpg", renderer);
 
-    Menu StartGame;
-    StartGame.set_menu_type(0);
-    StartGame.set_color();
+    Menu startMenu;
+    startMenu.set_menu_type(0);
+    startMenu.set_color();
 
     Menu endMenu;
     endMenu.set_menu_type(1);
@@ -83,27 +84,26 @@ int main(int argc, char *argv[]) {
     h1font = TTF_OpenFont("font/monogram.ttf", 40);
     h2font = TTF_OpenFont("font/monogram.ttf", 80);
 
-    while (!StartGame.run) {
+    while (!startMenu.run) {
         while (SDL_PollEvent(&e) != 0) {
             if (e.type == SDL_QUIT) {
-                StartGame.exit = true;
+                startMenu.exit = true;
             }
-            StartGame.HandleInputMenu(e, renderer);
+            startMenu.HandleInputMenu(e, renderer);
         }
         SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
         SDL_RenderClear(renderer);
         SDL_RenderCopy(renderer, gameBackground, NULL, NULL);
-        StartGame.SetMenu(h2font, renderer);
+        startMenu.SetMenu(h2font, renderer);
         SDL_RenderPresent(renderer);
     }
 
-    if (StartGame.run) {
+    if (startMenu.run) {
         gameIsRunning = true;
         endMenu.run = true;
         gameBackground = loadBackGround("images.jpg", renderer);
     }
 
-    //game bat dau render tai day
     while (gameIsRunning) {
         if (endMenu.run) {
             MapGame mapgame;
@@ -114,24 +114,17 @@ int main(int argc, char *argv[]) {
             gamePlayer.y_pos = 0 * TILE_SIZE;
             gamePlayer.LoadImg("Player/stand_right.png", renderer);
             gamePlayer.Set_Frame();
-
-            vector<Monster *> monsterList1 = GenerateMonsterList(10, 1, 120, 117);
-
-            Bars HealthBar;
-            HealthBar.set_type(0);
-            HealthBar.Loadimage("Bars/HealthBar.png", renderer);
-            HealthBar.S_Frame();
-
+            vector<Monster *> monster = CreateMonsterList(10, 1, 120, 117);
+            Bars healthBar;
+            healthBar.set_type(0);
+            healthBar.Loadimage("Bars/HealthBar.png", renderer);
+            healthBar.S_Frame();
             string playerScore;
-
-            Text time;
-            Text scoreDisplay;
-            time.SetColor(Text::WHITE_TEXT);
-            scoreDisplay.SetColor(Text::WHITE_TEXT);
-
+            Text timeText;
+            Text scoreText;
+            timeText.SetColor(Text::WHITE_TEXT);
+            scoreText.SetColor(Text::WHITE_TEXT);
             SDL_RenderCopy(renderer, gameBackground, NULL, NULL);
-            
-            
             gameTimer.run_game();
             while (!gameOver) {
                 gameTimer.begin();
@@ -150,9 +143,7 @@ int main(int argc, char *argv[]) {
                 SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
                 SDL_RenderClear(renderer);
                 SDL_RenderCopy(renderer, gameBackground, NULL, NULL);
-
                 currentMap gameMap = mapgame.GetMap();
-
                 gamePlayer.SetMoveMap(gameMap.start_x_, gameMap.start_y_);
                 gamePlayer.Move(gameMap);
                 gamePlayer.Attacked();
@@ -160,34 +151,29 @@ int main(int argc, char *argv[]) {
                 gamePlayer.Collect_Point(gameMap);
                 gamePlayer.Open_Chain(gameMap);
                 gamePlayer.Present(renderer);
-
                 gamePlayer.Is_Attacked_Left = false;
                 gamePlayer.Is_Attackef_Right = false;
-
-                HealthBar.Display(gamePlayer, renderer);
-
+                healthBar.Display(gamePlayer, renderer);
                 mapgame.SetMap(gameMap);
                 mapgame.Draw_Map(renderer);
-
-                UpdateMonsters(monsterList1, gameMap, gamePlayer);
-
-                string gameTimeText = "Time: ";
+                RefreshMonsters(monsters, gameMap, gamePlayer);
+                string gameTimeStr = "Time: ";
                 Uint32 elapsedTime = gameTimer.time_played() / 1000;
-                string elapsedTimeStr = to_string(elapsedTime);
-                gameTimeText += elapsedTimeStr;
-                time.SetText(gameTimeText);
-                time.LoadFromRenderText(h1font, renderer);
-                time.RenderText(renderer, SCREEN_WIDTH - 2.5 * TILE_SIZE, 15);
+                string elapsedTimeString = to_string(elapsedTime);
+                gameTimeStr += elapsedTimeString;
+                timeText.SetText(gameTimeStr);
+                timeText.LoadFromRenderText(h1font, renderer);
+                timeText.RenderText(renderer, SCREEN_WIDTH - 2.5 * TILE_SIZE, 15);
 
-                string scoreText = "Score: ";
+                string scoreStr = "Score: ";
                 Uint32 collectedPoints = gamePlayer.collected_point;
-                string collectedPointsStr = to_string(collectedPoints);
-                scoreText += collectedPointsStr;
-                scoreDisplay.SetText(scoreText);
-                scoreDisplay.LoadFromRenderText(h1font, renderer);
-                scoreDisplay.RenderText(renderer, SCREEN_WIDTH / 2 - TILE_SIZE, 15);
+                string collectedPointsString = to_string(collectedPoints);
+                scoreStr += collectedPointsString;
+                scoreText.SetText(scoreStr);
+                scoreText.LoadFromRenderText(h1font, renderer);
+                scoreText.RenderText(renderer, SCREEN_WIDTH / 2 - TILE_SIZE, 15);
 
-                playerScore = "YOUR SCORE: " + elapsedTimeStr + "s";
+                playerScore = "YOUR SCORE: " + elapsedTimeString + "s";
 
                 SDL_RenderPresent(renderer);
 
@@ -203,8 +189,9 @@ int main(int argc, char *argv[]) {
                 if (endMenu.win) {
                     gameBackground = loadBackGround("Menu/Menu_Win.png", renderer);
                     endMenu.get_score(playerScore);
-                } else
+                } else {
                     gameBackground = loadBackGround("Menu/Menu_Lose.png", renderer);
+                }
                 endMenu.set_color();
             }
 
@@ -227,17 +214,11 @@ int main(int argc, char *argv[]) {
                 gameBackground = loadBackGround("images.jpg", renderer);
                 gameOver = false;
                 endMenu.menu_close = false;
-            } else gameIsRunning = false;
+            } else {
+                gameIsRunning = false;
+            }
         }
     }
 
-    quitSDL(window, renderer);
     return 0;
 }
-
-
-
-
-
-
-
