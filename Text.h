@@ -1,55 +1,28 @@
-#ifndef TEXT_H_
-#define TEXT_H
+#ifndef TEXT_HANDLER_H
+#define TEXT_HANDLER_H
 
-#include "Player.h"
+#include <SDL.h>
+#include <SDL_ttf.h>
+#include <string>
 
-using namespace std;
-
-class Text : public Object {
+class TextHandler {
 public:
-    Text();
+    TextHandler();
+    ~TextHandler();
 
-    ~Text();
-
-    enum TextColor {
-        RED_TEXT = 0,
-        WHITE_TEXT = 1,
-        BLACK_TEXT = 2,
-    };
-
-    bool LoadFromFile(std::string path);
-
-    bool LoadFromRenderText(TTF_Font *font, SDL_Renderer *screen);
-
+    bool LoadFromRenderText(TTF_Font *font, SDL_Renderer *renderer);
     void Free();
-
     void SetColor(Uint8 red, Uint8 green, Uint8 blue);
-
     void SetColor(int type);
-
-    void RenderText(SDL_Renderer *screen, int xp, int yp, SDL_Rect *clip = NULL, double angle = 0.0,
-                    SDL_Point *center = NULL, SDL_RendererFlip flip = SDL_FLIP_NONE);
-
-    int GetWidth() const { return width_; }
-
-    int GetHeight() const { return height_; }
-
-    int GetXPos() const { return x_pos; }
-
-    int GetYPos() const { return y_pos; }
-
-    void SetText(const string &text) { str_val_ = text; }
-
-    string GetText() const { return str_val_; }
+    void RenderText(SDL_Renderer *renderer, int x, int y, SDL_Rect *clip = nullptr, double angle = 0.0,
+                    SDL_Point *center = nullptr, SDL_RendererFlip flip = SDL_FLIP_NONE);
 
 private:
-    string str_val_;
     SDL_Color text_color_;
     SDL_Texture *texture_;
+    std::string str_val_;
     int width_;
     int height_;
-    int x_pos;
-    int y_pos;
 };
 
-#endif
+#endif /* TEXT_HANDLER_H */
