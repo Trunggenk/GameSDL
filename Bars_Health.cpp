@@ -39,7 +39,7 @@ void Bars::S_Frame() {
 
 void Bars::Display(Player sake, SDL_Renderer *des) {
     if (type == Health) {
-        Loadimage("Bars/HealthBar.png", des);
+        Loadimage("HealthBar.png", des);
     }
 
     rect_.x = mapX;
