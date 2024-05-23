@@ -1,37 +1,43 @@
-#ifndef MAP_GAME_H_
-#define MAP_GAME_H_
+#ifndef MAPGAME_H
+#define MAPGAME_H
 
-#include "SDL_Init.h"
-#include "Object.h"
+#include <SDL2/SDL.h>
+#include <string>
+#include <algorithm>
 
-#define MAX_TILES 10
+const int MAX_X = 100;
+const int MAX_Y = 100;
+const int TILE_SIZE = 32;
+const int MAX_TILES = 256;
+const int SCREEN_WIDTH = 640;
+const int SCREEN_HEIGHT = 480;
 
-using namespace std;
+struct Map {
+    int playerPosX;
+    int playerPosY;
+    int startPosX;
+    int startPosY;
+    std::string mapName;
+    int tiles[MAX_Y][MAX_X];
+};
 
-class TileMat : public Object {
+class TileImage {
 public:
-    TileMat() { ; }
-
-    ~TileMat() { ; }
+    void LoadImage(const std::string& filename, SDL_Renderer* renderer);
+    void SetPosition(int x, int y);
+    void Render(SDL_Renderer* renderer, SDL_Rect* clip);
+    // Add other necessary member functions and data members
 };
 
 class MapGame {
-    currentMap map_;
-    TileMat tile_map[MAX_TILES];
 public:
-    MapGame() {}
+    void LoadMapData();
+    void LoadTileImages(SDL_Renderer* renderer);
+    void RenderMap(SDL_Renderer* renderer);
 
-    ~MapGame() {}
-
-    currentMap GetMap() { return map_; }
-
-    void SetMap(currentMap mymap) { map_ = mymap; };
-
-    void Load_Map();
-
-    void Load_Tiles(SDL_Renderer *renderer);
-
-    void Draw_Map(SDL_Renderer *renderer);
+private:
+    Map map_;
+    TileImage tileImages[MAX_TILES];
 };
 
-#endif
+#endif // MAPGAME_H
